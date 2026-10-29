@@ -1,0 +1,9 @@
+Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms
+
+The bundled model is Gemma 3 1B IT, LiteRT-LM dynamic int4, distributed under the Gemma Terms of Use.
+The model's prohibited-use restrictions apply. A copy of the Gemma Terms of Use and the referenced
+Gemma Prohibited Use Policy is included in this app's assets as GEMMA_TERMS_OF_USE.html and
+GEMMA_PROHIBITED_USE_POLICY.html.
+
+Original model repository: https://huggingface.co/litert-community/Gemma3-1B-IT
+The model weights are not modified.
