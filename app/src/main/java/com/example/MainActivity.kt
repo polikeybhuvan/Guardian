@@ -153,331 +153,333 @@ fun SosMeshAppRoot(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            EmergencyTopBar(
-                connectedPeers = connectedPeers,
-                onOpenDiagnostics = { viewModel.selectTab(AppTab.DIAGNOSTICS) },
-                onOpenCityPacks = { showCityPacksDialog = true },
-                onOpenMedicalId = { viewModel.selectTab(AppTab.MEDICAL_ID) }
-            )
-        },
-        bottomBar = {
-            NavigationBar(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets.safeDrawing,
+            topBar = {
+                EmergencyTopBar(
+                    connectedPeers = connectedPeers,
+                    onOpenDiagnostics = { viewModel.selectTab(AppTab.DIAGNOSTICS) },
+                    onOpenCityPacks = { showCityPacksDialog = true },
+                    onOpenMedicalId = { viewModel.selectTab(AppTab.MEDICAL_ID) }
+                )
+            },
+            bottomBar = {
+                NavigationBar(
+                    modifier = Modifier
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                        .testTag("main_navigation_bar"),
+                    containerColor = DarkSurfaceHigh,
+                    tonalElevation = 8.dp
+                ) {
+                    // Tab 1: Citizen SOS
+                    val isSosSelected = currentTab == AppTab.CITIZEN_SOS
+                    NavigationBarItem(
+                        selected = isSosSelected,
+                        onClick = { viewModel.selectTab(AppTab.CITIZEN_SOS) },
+                        icon = {
+                            Icon(
+                                imageVector = if (isSosSelected) Icons.Filled.CrisisAlert else Icons.Outlined.CrisisAlert,
+                                contentDescription = "Citizen SOS"
+                            )
+                        },
+                        label = { Text("SOS", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
+                            indicatorColor = EmergencyRed,
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
+                        ),
+                        modifier = Modifier.testTag("nav_item_citizen_sos")
+                    )
+
+                    // Tab 2: Nearby Help Centers & Map
+                    val isMapSelected = currentTab == AppTab.NEARBY_HELP
+                    NavigationBarItem(
+                        selected = isMapSelected,
+                        onClick = { viewModel.selectTab(AppTab.NEARBY_HELP) },
+                        icon = {
+                            Icon(
+                                imageVector = if (isMapSelected) Icons.Filled.Map else Icons.Outlined.Map,
+                                contentDescription = "Help & Map"
+                            )
+                        },
+                        label = { Text("Map", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
+                            indicatorColor = EmergencyRed,
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
+                        ),
+                        modifier = Modifier.testTag("nav_item_radar")
+                    )
+
+                    // Tab 3: Offline Survival Guides & First-Aid
+                    val isGuidesSelected = currentTab == AppTab.SURVIVAL_GUIDE
+                    NavigationBarItem(
+                        selected = isGuidesSelected,
+                        onClick = { viewModel.selectTab(AppTab.SURVIVAL_GUIDE) },
+                        icon = {
+                            Icon(
+                                imageVector = if (isGuidesSelected) Icons.Filled.MedicalServices else Icons.Outlined.MedicalServices,
+                                contentDescription = "First Aid"
+                            )
+                        },
+                        label = { Text("Aid", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
+                            indicatorColor = EmergencyRed,
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
+                        ),
+                        modifier = Modifier.testTag("nav_item_guides")
+                    )
+
+                    // Tab 4: Safety Hub (Contacts, Medical ID, Family)
+                    val isContactsSelected = currentTab == AppTab.CONTACTS || currentTab == AppTab.FAMILY || currentTab == AppTab.MEDICAL_ID
+                    NavigationBarItem(
+                        selected = isContactsSelected,
+                        onClick = { viewModel.selectTab(AppTab.CONTACTS) },
+                        icon = {
+                            Icon(
+                                imageVector = if (isContactsSelected) Icons.Filled.ContactPhone else Icons.Outlined.ContactPhone,
+                                contentDescription = "Safety Hub"
+                            )
+                        },
+                        label = { Text("Safety", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
+                            indicatorColor = EmergencyRed,
+                            unselectedIconColor = Color(0xFF94A3B8),
+                            unselectedTextColor = Color(0xFF94A3B8)
+                        ),
+                        modifier = Modifier.testTag("nav_item_safety_hub")
+                    )
+                }
+            }
+        ) { innerPadding ->
+            Box(
                 modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .testTag("main_navigation_bar"),
-                containerColor = DarkSurfaceHigh,
-                tonalElevation = 8.dp
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                // Tab 1: Citizen SOS
-                val isSosSelected = currentTab == AppTab.CITIZEN_SOS
-                NavigationBarItem(
-                    selected = isSosSelected,
-                    onClick = { viewModel.selectTab(AppTab.CITIZEN_SOS) },
-                    icon = {
-                        Icon(
-                            imageVector = if (isSosSelected) Icons.Filled.CrisisAlert else Icons.Outlined.CrisisAlert,
-                            contentDescription = "Citizen SOS"
+                when (currentTab) {
+                    AppTab.CITIZEN_SOS -> {
+                        val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
+                        val peopleCount by viewModel.peopleCount.collectAsStateWithLifecycle()
+                        val userNote by viewModel.userNote.collectAsStateWithLifecycle()
+                        val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
+                        val triagePreview by viewModel.triagePreview.collectAsStateWithLifecycle()
+                        val isTriageLoading by viewModel.isTriageLoading.collectAsStateWithLifecycle()
+                        val isCountdownActive by viewModel.isCountdownActive.collectAsStateWithLifecycle()
+                        val countdownSeconds by viewModel.countdownSeconds.collectAsStateWithLifecycle()
+                        val latestAlert by viewModel.latestLocalAlert.collectAsStateWithLifecycle()
+                        val offlineGemmaReport by viewModel.offlineGemmaReport.collectAsStateWithLifecycle()
+
+                        CitizenSosScreen(
+                            selectedCategory = category,
+                            peopleCount = peopleCount,
+                            userNote = userNote,
+                            triagePreview = triagePreview,
+                            isTriageLoading = isTriageLoading,
+                            isCountdownActive = isCountdownActive,
+                            countdownSeconds = countdownSeconds,
+                            latestAlert = latestAlert,
+                            currentCoordinates = currentCoordinates,
+                            connectedPeers = connectedPeers,
+                            isSirenActive = isSirenActive,
+                            sirenError = sirenError,
+                            isTorchActive = isTorchActive,
+                            savedContactsCount = emergencyContacts.size,
+                            lastSmsResult = lastSmsResult,
+                            nearestHospital = nearestHospital,
+                            nearestPolice = nearestPolice,
+                            offlineGemmaReport = offlineGemmaReport,
+                            isMorseBeaconActive = isMorseBeaconActive,
+                            onSelectCategory = viewModel::selectCategory,
+                            onPeopleCountChange = viewModel::setPeopleCount,
+                            onUserNoteChange = viewModel::setUserNote,
+                            onTriggerSos = viewModel::startSosCountdown,
+                            onCancelSos = viewModel::cancelSosCountdown,
+                            onUpdateLocation = viewModel::updateCoordinates,
+                            onToggleSiren = viewModel::toggleSiren,
+                            onToggleTorch = viewModel::toggleTorchStrobe,
+                            onToggleMorseBeacon = viewModel::toggleMorseBeacon,
+                            onOpenFloodlight = { viewModel.setFloodlightVisible(true) },
+                            onOpenCompassHud = { viewModel.setCompassHudVisible(true) },
+                            onNavigateToFamily = { viewModel.selectTab(AppTab.FAMILY) },
+                            onNavigateToSupplies = { viewModel.selectTab(AppTab.SUPPLIES) },
+                            onNavigateToContacts = { viewModel.selectTab(AppTab.CONTACTS) },
+                            onNavigateToMap = { viewModel.selectTab(AppTab.NEARBY_HELP) },
+                            onOpenAiTriage = { viewModel.selectTab(AppTab.SURVIVAL_GUIDE) },
+                            onNavigateToMedicalProfile = { viewModel.selectTab(AppTab.MEDICAL_ID) },
+                            isBackgroundRelayActive = isBackgroundRelayActive,
+                            relayStatusError = relayStatusError,
+                            onToggleBackgroundRelay = viewModel::toggleBackgroundRelay,
+                            isWifiBeaconActive = isWifiBeaconActive,
+                            wifiBeaconSsid = wifiBeaconSsid,
+                            onToggleWifiBeacon = viewModel::toggleWifiEmergencyBeacon
                         )
-                    },
-                    label = { Text("SOS", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.White,
-                        indicatorColor = EmergencyRed,
-                        unselectedIconColor = Color(0xFF94A3B8),
-                        unselectedTextColor = Color(0xFF94A3B8)
-                    ),
-                    modifier = Modifier.testTag("nav_item_citizen_sos")
-                )
+                    }
 
-                // Tab 2: Nearby Help Centers & Map
-                val isMapSelected = currentTab == AppTab.NEARBY_HELP
-                NavigationBarItem(
-                    selected = isMapSelected,
-                    onClick = { viewModel.selectTab(AppTab.NEARBY_HELP) },
-                    icon = {
-                        Icon(
-                            imageVector = if (isMapSelected) Icons.Filled.Map else Icons.Outlined.Map,
-                            contentDescription = "Help & Map"
+                    AppTab.FAMILY -> {
+                        FamilyCircleScreen(
+                            familyMembers = familyMembers,
+                            onAddMember = { name, relation, devId, phone ->
+                                viewModel.addFamilyMember(name, relation, devId, phone)
+                            },
+                            onRemoveMember = { id ->
+                                viewModel.removeFamilyMember(id)
+                            },
+                            onTriggerWalkieTalkie = { member ->
+                                viewModel.startVoiceRecording()
+                            }
                         )
-                    },
-                    label = { Text("Map", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.White,
-                        indicatorColor = EmergencyRed,
-                        unselectedIconColor = Color(0xFF94A3B8),
-                        unselectedTextColor = Color(0xFF94A3B8)
-                    ),
-                    modifier = Modifier.testTag("nav_item_radar")
-                )
+                    }
 
-                // Tab 3: Offline Survival Guides & First-Aid
-                val isGuidesSelected = currentTab == AppTab.SURVIVAL_GUIDE
-                NavigationBarItem(
-                    selected = isGuidesSelected,
-                    onClick = { viewModel.selectTab(AppTab.SURVIVAL_GUIDE) },
-                    icon = {
-                        Icon(
-                            imageVector = if (isGuidesSelected) Icons.Filled.MedicalServices else Icons.Outlined.MedicalServices,
-                            contentDescription = "First Aid"
+                    AppTab.SUPPLIES -> {
+                        SupplyExchangeScreen(
+                            supplies = supplyItems,
+                            onAddSupply = { supply ->
+                                viewModel.addSupplyItem(supply)
+                            },
+                            onResolveSupply = { id ->
+                                viewModel.resolveSupplyItem(id)
+                            }
                         )
-                    },
-                    label = { Text("Aid", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.White,
-                        indicatorColor = EmergencyRed,
-                        unselectedIconColor = Color(0xFF94A3B8),
-                        unselectedTextColor = Color(0xFF94A3B8)
-                    ),
-                    modifier = Modifier.testTag("nav_item_guides")
-                )
+                    }
 
-                // Tab 4: Safety Hub (Contacts, Medical ID, Family)
-                val isContactsSelected = currentTab == AppTab.CONTACTS || currentTab == AppTab.FAMILY || currentTab == AppTab.MEDICAL_ID
-                NavigationBarItem(
-                    selected = isContactsSelected,
-                    onClick = { viewModel.selectTab(AppTab.CONTACTS) },
-                    icon = {
-                        Icon(
-                            imageVector = if (isContactsSelected) Icons.Filled.ContactPhone else Icons.Outlined.ContactPhone,
-                            contentDescription = "Safety Hub"
+                    AppTab.CONTACTS -> {
+                        val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
+                        val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
+
+                        EmergencyContactsScreen(
+                            contacts = emergencyContacts,
+                            currentCoordinates = currentCoordinates,
+                            nearestHospital = nearestHospital,
+                            nearestPolice = nearestPolice,
+                            nearestRelief = nearestRelief,
+                            selectedCategory = category,
+                            lastSmsResult = lastSmsResult,
+                            onAddContact = viewModel::addEmergencyContact,
+                            onDeleteContact = viewModel::deleteEmergencyContact,
+                            onSendTestSms = viewModel::sendTestSms,
+                            onOpenMedicalId = { viewModel.selectTab(AppTab.MEDICAL_ID) },
+                            onOpenFamilyCircle = { viewModel.selectTab(AppTab.FAMILY) }
                         )
-                    },
-                    label = { Text("Safety", fontSize = 12.sp, fontWeight = FontWeight.SemiBold) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.White,
-                        indicatorColor = EmergencyRed,
-                        unselectedIconColor = Color(0xFF94A3B8),
-                        unselectedTextColor = Color(0xFF94A3B8)
-                    ),
-                    modifier = Modifier.testTag("nav_item_safety_hub")
-                )
-            }
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (currentTab) {
-                AppTab.CITIZEN_SOS -> {
-                    val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
-                    val peopleCount by viewModel.peopleCount.collectAsStateWithLifecycle()
-                    val userNote by viewModel.userNote.collectAsStateWithLifecycle()
-                    val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
-                    val triagePreview by viewModel.triagePreview.collectAsStateWithLifecycle()
-                    val isTriageLoading by viewModel.isTriageLoading.collectAsStateWithLifecycle()
-                    val isCountdownActive by viewModel.isCountdownActive.collectAsStateWithLifecycle()
-                    val countdownSeconds by viewModel.countdownSeconds.collectAsStateWithLifecycle()
-                    val latestAlert by viewModel.latestLocalAlert.collectAsStateWithLifecycle()
-                    val offlineGemmaReport by viewModel.offlineGemmaReport.collectAsStateWithLifecycle()
+                    }
 
-                    CitizenSosScreen(
-                        selectedCategory = category,
-                        peopleCount = peopleCount,
-                        userNote = userNote,
-                        triagePreview = triagePreview,
-                        isTriageLoading = isTriageLoading,
-                        isCountdownActive = isCountdownActive,
-                        countdownSeconds = countdownSeconds,
-                        latestAlert = latestAlert,
-                        currentCoordinates = currentCoordinates,
-                        connectedPeers = connectedPeers,
-                        isSirenActive = isSirenActive,
-                        sirenError = sirenError,
-                        isTorchActive = isTorchActive,
-                        savedContactsCount = emergencyContacts.size,
-                        lastSmsResult = lastSmsResult,
-                        nearestHospital = nearestHospital,
-                        nearestPolice = nearestPolice,
-                        offlineGemmaReport = offlineGemmaReport,
-                        isMorseBeaconActive = isMorseBeaconActive,
-                        onSelectCategory = viewModel::selectCategory,
-                        onPeopleCountChange = viewModel::setPeopleCount,
-                        onUserNoteChange = viewModel::setUserNote,
-                        onTriggerSos = viewModel::startSosCountdown,
-                        onCancelSos = viewModel::cancelSosCountdown,
-                        onUpdateLocation = viewModel::updateCoordinates,
-                        onToggleSiren = viewModel::toggleSiren,
-                        onToggleTorch = viewModel::toggleTorchStrobe,
-                        onToggleMorseBeacon = viewModel::toggleMorseBeacon,
-                        onOpenFloodlight = { viewModel.setFloodlightVisible(true) },
-                        onOpenCompassHud = { viewModel.setCompassHudVisible(true) },
-                        onNavigateToFamily = { viewModel.selectTab(AppTab.FAMILY) },
-                        onNavigateToSupplies = { viewModel.selectTab(AppTab.SUPPLIES) },
-                        onNavigateToContacts = { viewModel.selectTab(AppTab.CONTACTS) },
-                        onNavigateToMap = { viewModel.selectTab(AppTab.NEARBY_HELP) },
-                        onOpenAiTriage = { viewModel.selectTab(AppTab.SURVIVAL_GUIDE) },
-                        onNavigateToMedicalProfile = { viewModel.selectTab(AppTab.MEDICAL_ID) },
-                        isBackgroundRelayActive = isBackgroundRelayActive,
-                        relayStatusError = relayStatusError,
-                        onToggleBackgroundRelay = viewModel::toggleBackgroundRelay,
-                        isWifiBeaconActive = isWifiBeaconActive,
-                        wifiBeaconSsid = wifiBeaconSsid,
-                        onToggleWifiBeacon = viewModel::toggleWifiEmergencyBeacon
-                    )
-                }
+                    AppTab.NEARBY_HELP -> {
+                        val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
 
-                AppTab.FAMILY -> {
-                    FamilyCircleScreen(
-                        familyMembers = familyMembers,
-                        onAddMember = { name, relation, devId, phone ->
-                            viewModel.addFamilyMember(name, relation, devId, phone)
-                        },
-                        onRemoveMember = { id ->
-                            viewModel.removeFamilyMember(id)
-                        },
-                        onTriggerWalkieTalkie = { member ->
-                            viewModel.startVoiceRecording()
-                        }
-                    )
-                }
+                        NearbyHelpRadarScreen(
+                            currentCoordinates = currentCoordinates,
+                            onRefreshLocation = viewModel::updateCoordinates
+                        )
+                    }
 
-                AppTab.SUPPLIES -> {
-                    SupplyExchangeScreen(
-                        supplies = supplyItems,
-                        onAddSupply = { supply ->
-                            viewModel.addSupplyItem(supply)
-                        },
-                        onResolveSupply = { id ->
-                            viewModel.resolveSupplyItem(id)
-                        }
-                    )
-                }
+                    AppTab.SURVIVAL_GUIDE -> {
+                        val customSymptomInput by viewModel.customSymptomInput.collectAsStateWithLifecycle()
+                        val customGemmaReport by viewModel.customGemmaReport.collectAsStateWithLifecycle()
+                        val triageChatMessages by viewModel.triageChatMessages.collectAsStateWithLifecycle()
+                        val isAiTyping by viewModel.isTriageAiTyping.collectAsStateWithLifecycle()
+                        val offlineGemmaStatus by viewModel.offlineGemmaStatus.collectAsStateWithLifecycle()
 
-                AppTab.CONTACTS -> {
-                    val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
-                    val category by viewModel.selectedCategory.collectAsStateWithLifecycle()
+                        SurvivalGuidesScreen(
+                            customSymptomInput = customSymptomInput,
+                            customGemmaReport = customGemmaReport,
+                            triageChatMessages = triageChatMessages,
+                            isAiTyping = isAiTyping,
+                            offlineGemmaStatus = offlineGemmaStatus,
+                            onInstallGemmaModel = viewModel::installOfflineGemmaModel,
+                            onSymptomInputChange = viewModel::runCustomGemmaTriage,
+                            onSendChatMessage = viewModel::sendTriageChatMessage,
+                            onClearChat = viewModel::clearTriageChat,
+                            onApplyTriageToSos = viewModel::applyTriageToSos,
+                            onTriggerSosShortcut = { viewModel.selectTab(AppTab.CITIZEN_SOS) }
+                        )
+                    }
 
-                    EmergencyContactsScreen(
-                        contacts = emergencyContacts,
-                        currentCoordinates = currentCoordinates,
-                        nearestHospital = nearestHospital,
-                        nearestPolice = nearestPolice,
-                        nearestRelief = nearestRelief,
-                        selectedCategory = category,
-                        lastSmsResult = lastSmsResult,
-                        onAddContact = viewModel::addEmergencyContact,
-                        onDeleteContact = viewModel::deleteEmergencyContact,
-                        onSendTestSms = viewModel::sendTestSms,
-                        onOpenMedicalId = { viewModel.selectTab(AppTab.MEDICAL_ID) },
-                        onOpenFamilyCircle = { viewModel.selectTab(AppTab.FAMILY) }
-                    )
-                }
+                    AppTab.RESPONDER -> {
+                        val incidents by viewModel.allIncidents.collectAsStateWithLifecycle()
+                        val filter by viewModel.priorityFilter.collectAsStateWithLifecycle()
 
-                AppTab.NEARBY_HELP -> {
-                    val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
+                        ResponderScreen(
+                            incidents = incidents,
+                            selectedFilter = filter,
+                            onSelectFilter = viewModel::setPriorityFilter,
+                            onAcknowledgeAlert = viewModel::acknowledgeAlert
+                        )
+                    }
 
-                    NearbyHelpRadarScreen(
-                        currentCoordinates = currentCoordinates,
-                        onRefreshLocation = viewModel::updateCoordinates
-                    )
-                }
+                    AppTab.MEDICAL_ID -> {
+                        MedicalProfileScreen(
+                            profile = medicalProfile,
+                            onSaveProfile = viewModel::saveMedicalProfile
+                        )
+                    }
 
-                AppTab.SURVIVAL_GUIDE -> {
-                    val customSymptomInput by viewModel.customSymptomInput.collectAsStateWithLifecycle()
-                    val customGemmaReport by viewModel.customGemmaReport.collectAsStateWithLifecycle()
-                    val triageChatMessages by viewModel.triageChatMessages.collectAsStateWithLifecycle()
-                    val isAiTyping by viewModel.isTriageAiTyping.collectAsStateWithLifecycle()
-                    val offlineGemmaStatus by viewModel.offlineGemmaStatus.collectAsStateWithLifecycle()
+                    AppTab.DIAGNOSTICS -> {
+                        val isBtEnabled by viewModel.isBluetoothEnabled.collectAsStateWithLifecycle()
+                        val isWifiEnabled by viewModel.isWifiEnabled.collectAsStateWithLifecycle()
+                        val allIncidents by viewModel.allIncidents.collectAsStateWithLifecycle()
+                        val peersList by viewModel.discoveredPeers.collectAsStateWithLifecycle()
+                        val logs by viewModel.transmissionLogs.collectAsStateWithLifecycle()
+                        val cachedSignalsCount by viewModel.cachedSignalsCount.collectAsStateWithLifecycle()
+                        val cachedNodesCount by viewModel.cachedNodesCount.collectAsStateWithLifecycle()
 
-                    SurvivalGuidesScreen(
-                        customSymptomInput = customSymptomInput,
-                        customGemmaReport = customGemmaReport,
-                        triageChatMessages = triageChatMessages,
-                        isAiTyping = isAiTyping,
-                        offlineGemmaStatus = offlineGemmaStatus,
-                        onInstallGemmaModel = viewModel::installOfflineGemmaModel,
-                        onSymptomInputChange = viewModel::runCustomGemmaTriage,
-                        onSendChatMessage = viewModel::sendTriageChatMessage,
-                        onClearChat = viewModel::clearTriageChat,
-                        onApplyTriageToSos = viewModel::applyTriageToSos,
-                        onTriggerSosShortcut = { viewModel.selectTab(AppTab.CITIZEN_SOS) }
-                    )
-                }
-
-                AppTab.RESPONDER -> {
-                    val incidents by viewModel.allIncidents.collectAsStateWithLifecycle()
-                    val filter by viewModel.priorityFilter.collectAsStateWithLifecycle()
-
-                    ResponderScreen(
-                        incidents = incidents,
-                        selectedFilter = filter,
-                        onSelectFilter = viewModel::setPriorityFilter,
-                        onAcknowledgeAlert = viewModel::acknowledgeAlert
-                    )
-                }
-
-                AppTab.MEDICAL_ID -> {
-                    MedicalProfileScreen(
-                        profile = medicalProfile,
-                        onSaveProfile = viewModel::saveMedicalProfile
-                    )
-                }
-
-                AppTab.DIAGNOSTICS -> {
-                    val isBtEnabled by viewModel.isBluetoothEnabled.collectAsStateWithLifecycle()
-                    val isWifiEnabled by viewModel.isWifiEnabled.collectAsStateWithLifecycle()
-                    val allIncidents by viewModel.allIncidents.collectAsStateWithLifecycle()
-                    val peersList by viewModel.discoveredPeers.collectAsStateWithLifecycle()
-                    val logs by viewModel.transmissionLogs.collectAsStateWithLifecycle()
-                    val cachedSignalsCount by viewModel.cachedSignalsCount.collectAsStateWithLifecycle()
-                    val cachedNodesCount by viewModel.cachedNodesCount.collectAsStateWithLifecycle()
-
-                    MeshDiagnosticsScreen(
-                        isBluetoothEnabled = isBtEnabled,
-                        isWifiEnabled = isWifiEnabled,
-                        isInternetAvailable = isInternetAvailable,
-                        deviceId = viewModel.deviceId,
-                        totalStoredAlerts = allIncidents.size,
-                        connectedPeers = connectedPeers,
-                        peersList = peersList,
-                        logs = logs,
-                        onRefreshState = viewModel::refreshRadioState,
-                        cachedSignalsCount = cachedSignalsCount,
-                        cachedNodesCount = cachedNodesCount
-                    )
+                        MeshDiagnosticsScreen(
+                            isBluetoothEnabled = isBtEnabled,
+                            isWifiEnabled = isWifiEnabled,
+                            isInternetAvailable = isInternetAvailable,
+                            deviceId = viewModel.deviceId,
+                            totalStoredAlerts = allIncidents.size,
+                            connectedPeers = connectedPeers,
+                            peersList = peersList,
+                            logs = logs,
+                            onRefreshState = viewModel::refreshRadioState,
+                            cachedSignalsCount = cachedSignalsCount,
+                            cachedNodesCount = cachedNodesCount
+                        )
+                    }
                 }
             }
         }
-    }
 
-    // Full-screen Heads-Up Tactical AR Compass Dialog
-    if (showCompassHud) {
-        val targetFacility = nearestHospital ?: nearestPolice ?: emergencyCenters.firstOrNull()
-        val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
-        TacticalCompassHudDialog(
-            targetFacility = targetFacility,
-            currentCoordinates = currentCoordinates,
-            azimuthDegrees = compassAzimuth,
-            isCompassAvailable = isCompassAvailable,
-            onDismiss = { viewModel.setCompassHudVisible(false) }
-        )
-    }
-
-    // Full-screen steady-white rescue floodlight.
-    if (showFloodlight) {
-        FloodlightDialog(
-            onDismiss = { viewModel.setFloodlightVisible(false) }
-        )
-    }
-
-    // City Disaster Packs Modal Sheet / Dialog
-    if (showCityPacksDialog) {
-        Dialog(
-            onDismissRequest = { showCityPacksDialog = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            CityDisasterPacksScreen()
+        // Full-screen Heads-Up Tactical AR Compass Dialog
+        if (showCompassHud) {
+            val targetFacility = nearestHospital ?: nearestPolice ?: emergencyCenters.firstOrNull()
+            val currentCoordinates by viewModel.currentCoordinates.collectAsStateWithLifecycle()
+            TacticalCompassHudDialog(
+                targetFacility = targetFacility,
+                currentCoordinates = currentCoordinates,
+                azimuthDegrees = compassAzimuth,
+                isCompassAvailable = isCompassAvailable,
+                onDismiss = { viewModel.setCompassHudVisible(false) }
+            )
         }
-    }
 
+        // Full-screen red, white, and blue rescue floodlight.
+        if (showFloodlight) {
+            FloodlightDialog(
+                onDismiss = { viewModel.setFloodlightVisible(false) }
+            )
+        }
+
+        // City Disaster Packs Modal Sheet / Dialog
+        if (showCityPacksDialog) {
+            Dialog(
+                onDismissRequest = { showCityPacksDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                CityDisasterPacksScreen()
+            }
+        }
+
+    }
 }

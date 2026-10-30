@@ -8,6 +8,8 @@ android {
   namespace = "com.example"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
+  val localDebugKeystore = rootProject.file("debug.keystore")
+
   defaultConfig {
     applicationId = "com.aistudio.sosmesh.kxmbpv"
     minSdk = 24
@@ -20,6 +22,18 @@ android {
 
   // Keep private release signing material outside the repository.
   signingConfigs {
+    // Reuse an existing ignored local debug key when available, so Studio can
+    // update an app already installed on this developer's device. Fresh clones
+    // without this file continue to use Android's generated debug key.
+    if (localDebugKeystore.exists()) {
+      create("localDebug") {
+        storeFile = localDebugKeystore
+        storePassword = "android"
+        keyAlias = "androiddebugkey"
+        keyPassword = "android"
+      }
+    }
+
     create("release") {
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
@@ -30,6 +44,12 @@ android {
   }
 
   buildTypes {
+    debug {
+      if (localDebugKeystore.exists()) {
+        signingConfig = signingConfigs.getByName("localDebug")
+      }
+    }
+
     release {
       isCrunchPngs = false
       isMinifyEnabled = false
