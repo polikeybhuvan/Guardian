@@ -1,10 +1,8 @@
 # Guardian
 
-**Prepared to act when help is still on the way.** Guardian is an Android emergency-support prototype that brings contact-based SOS, an offline India map, on-device emergency guidance, and practical rescue tools into one app.
+**Prepared to act when help is still on the way.** Guardian is an Android emergency-support prototype combining contact-based SOS, an offline India map, on-device emergency guidance, and practical rescue tools.
 
-![Guardian project banner](.guardian-header.png)
-
-[Download the Android test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk) · [Install and test](docs/INSTALL_AND_TEST.md) · [Hackathon brief and demo](docs/HACKATHON.md)
+[Installation and testing](docs/INSTALL_AND_TEST.md) · [Hackathon brief and demo](docs/HACKATHON.md)
 
 ## The problem
 
@@ -28,9 +26,9 @@ Guardian complements official emergency response. It sends SOS messages to saved
 
 If someone is stranded during flooding with mobile data unavailable, they can check their position on the offline map, send an SOS and location by SMS to saved contacts when cellular SMS is available, consult offline guidance, and use a torch or Morse signal to attract attention.
 
-## Try the working prototype
+## Download the test build
 
-The current GitHub release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model. The APK is about **1.57 GiB**, and the app needs additional storage while it prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it with testers. Keep Play Protect enabled; some phones may block direct sideloading of this test build because it requests SMS permission.
+The GitHub pre-release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model and is about **1.57 GiB**; allow extra space while the app prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it. Keep Play Protect enabled; some phones may block direct sideloading because the app requests SMS permission.
 
 - [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk)
 - [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.1-test)
