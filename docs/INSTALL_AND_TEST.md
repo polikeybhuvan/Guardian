@@ -6,18 +6,18 @@ This guide is for hackathon reviewers and people testing Guardian on an Android 
 
 ### Route 1: Download the test APK
 
-Download the [Guardian 1.0.1 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk) from GitHub. It is about **1.57 GiB**. Keep several GB of free space available because the app prepares the map and AI model in app storage.
+Download the [Guardian 1.0.2 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.2-test/Guardian-Android-Test-1.0.2.apk) from GitHub. It is about **1.57 GiB**. Keep several GB of free space available because the app prepares the map and AI model in app storage.
 
 Before installing, verify the downloaded file’s SHA-256 hash:
 
 ```powershell
-Get-FileHash .\Guardian-Android-Test-1.0.1.apk -Algorithm SHA256
+Get-FileHash .\Guardian-Android-Test-1.0.2.apk -Algorithm SHA256
 ```
 
 Expected hash:
 
 ```text
-3A36CBE0216E3B1C93BFEB1012FED1651257344D1245F2ED226505260CD5B627
+2481800A48AF0EA6E2D0F31A77DB0A61C83557C6332C4ED5FF0915857B8C63D4
 ```
 
 On the phone, open the downloaded APK and follow Android’s installation prompts if it allows the install. This is a debug-signed test build and requests SMS permission for emergency alerts, so Play Protect may warn or block a direct Chrome/Files install on some devices. **Keep Play Protect enabled.** If the system blocks the install, use Route 2 or the limited-distribution option below; do not download a copy from an unofficial mirror.
@@ -37,17 +37,17 @@ ADB is Android’s standard developer workflow for installing and testing an APK
 4. Install the APK. Replace the example path with the APK’s actual location:
 
    ```powershell
-   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.1.apk"
+   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.2.apk"
    ```
 
 For macOS or Linux, use `./adb` instead of `.\adb.exe`:
 
 ```bash
 ./adb devices
-./adb install -r ~/Downloads/Guardian-Android-Test-1.0.1.apk
+./adb install -r ~/Downloads/Guardian-Android-Test-1.0.2.apk
 ```
 
-If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.1.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
+If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.2.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
 
 ADB is a developer installation route, not a Play Store review or malware certification. Play Protect can still scan apps after installation.
 

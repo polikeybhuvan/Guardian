@@ -30,9 +30,9 @@ If someone is stranded during flooding with mobile data unavailable, they can ch
 
 The GitHub pre-release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model and is about **1.57 GiB**; allow extra space while the app prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it. Keep Play Protect enabled; some phones may block direct sideloading because the app requests SMS permission.
 
-- [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk)
-- [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.1-test)
-- SHA-256: `3A36CBE0216E3B1C93BFEB1012FED1651257344D1245F2ED226505260CD5B627`
+- [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.2-test/Guardian-Android-Test-1.0.2.apk)
+- [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.2-test)
+- SHA-256: `2481800A48AF0EA6E2D0F31A77DB0A61C83557C6332C4ED5FF0915857B8C63D4`
 
 ## Build from source
 

@@ -1,6 +1,6 @@
 # Releasing a Guardian test build
 
-This checklist covers a direct APK release through GitHub. The current GitHub release, tagged `v1.0.1-test`, contains a debug-signed test APK for demonstrations and device testing.
+This checklist covers a direct APK release through GitHub. The current GitHub release, tagged `v1.0.2-test`, contains a debug-signed test APK for demonstrations and device testing.
 
 ## 1. Prepare the version
 
