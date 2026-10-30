@@ -385,6 +385,9 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
     fun startSosCountdown() {
         _countdownSeconds.value = 5
         _isCountdownActive.value = true
+        // Start refreshing before the cancel window ends so the SMS can include the newest
+        // available GPS fix even when the SOS screen has been open for a while.
+        updateCoordinates()
         countdownJob?.cancel()
         countdownJob = viewModelScope.launch {
             for (i in 5 downTo 1) {
@@ -437,7 +440,9 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
             return
         }
 
-        val coordinates = _currentCoordinates.value ?: app.locationHelper.getLastKnownCoordinates()
+        val coordinates = app.locationHelper.getCurrentCoordinates(timeoutMillis = 5_000)
+            ?: _currentCoordinates.value
+        if (coordinates != null) _currentCoordinates.value = coordinates
         val distressMessage = smsDispatcher.composeDistressMessage(
             category = category,
             peopleCount = peopleCount,
@@ -481,7 +486,7 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
                 }
             }
 
-        val coordinates = _currentCoordinates.value ?: app.locationHelper.getLastKnownCoordinates()
+        val coordinates = _currentCoordinates.value
         val baseMessage = MeshMessage(
             type = MessageType.SOS,
             category = category,

@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +19,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -35,12 +39,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +67,7 @@ import com.example.ui.theme.DarkSurfaceHigh
 import com.example.ui.theme.MeshConnectedGreen
 import com.example.ui.theme.MeshWarningOrange
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
@@ -76,6 +86,13 @@ fun EmergencyMapScreen(
     var isInstalling by remember { mutableStateOf(false) }
     var retryInstall by remember { mutableStateOf(0) }
     var recenterRequest by remember { mutableStateOf(0) }
+    var showSearchDialog by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("hospital") }
+    var searchResults by remember { mutableStateOf<List<OfflineMapPlace>>(emptyList()) }
+    var isSearching by remember { mutableStateOf(false) }
+    var hasSearched by remember { mutableStateOf(false) }
+    var mapTarget by remember { mutableStateOf<OfflineMapPlace?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -92,6 +109,8 @@ fun EmergencyMapScreen(
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
     }
+
+    LaunchedEffect(Unit) { ensureLocation() }
 
     LaunchedEffect(retryInstall) {
         if (offlineMapFile != null || isInstalling) return@LaunchedEffect
@@ -119,6 +138,8 @@ fun EmergencyMapScreen(
                 longitude = currentCoordinates?.longitude,
                 accuracyM = currentCoordinates?.accuracyM,
                 recenterRequest = recenterRequest,
+                focusLatitude = mapTarget?.latitude,
+                focusLongitude = mapTarget?.longitude,
                 modifier = Modifier.fillMaxSize().testTag("offline_india_map")
             )
         } else {
@@ -234,31 +255,18 @@ fun EmergencyMapScreen(
             horizontalAlignment = Alignment.End
         ) {
             FloatingActionButton(
-                onClick = {
-                    val location = currentCoordinates
-                    if (location == null) {
-                        ensureLocation()
-                        Toast.makeText(context, "Get a location fix to search nearby.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("geo:${location.latitude},${location.longitude}?q=hospitals+police+fire+stations")
-                        )
-                        context.startActivity(intent)
-                    }
-                },
+                onClick = { showSearchDialog = true },
                 containerColor = Color(0xFF1E3A24),
                 contentColor = MeshConnectedGreen,
                 modifier = Modifier.size(48.dp).testTag("search_nearby_places_button")
             ) {
-                Icon(Icons.Filled.Search, contentDescription = "Search nearby in Maps")
+                Icon(Icons.Filled.Search, contentDescription = "Search nearby places")
             }
             FloatingActionButton(
                 onClick = {
-                    if (currentCoordinates != null) {
-                        recenterRequest++
-                        onRefreshLocation()
-                    } else ensureLocation()
+                    mapTarget = null
+                    recenterRequest++
+                    ensureLocation()
                 },
                 containerColor = DarkSurfaceHigh,
                 contentColor = Color(0xFF81D4FA),
@@ -269,11 +277,119 @@ fun EmergencyMapScreen(
         }
 
         Text(
-            text = "Offline streets · nearby search needs internet",
+            text = "Offline map · GPS works without internet",
             color = Color.White,
             fontSize = 10.sp,
             modifier = Modifier.align(Alignment.BottomStart).padding(10.dp)
                 .background(Color(0xCC0F1720), RoundedCornerShape(6.dp)).padding(horizontal = 8.dp, vertical = 5.dp)
         )
+
+        if (showSearchDialog) {
+            AlertDialog(
+                onDismissRequest = { showSearchDialog = false },
+                title = { Text("Find nearby") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                searchResults = emptyList()
+                                hasSearched = false
+                            },
+                            label = { Text("Place or service") },
+                            placeholder = { Text("Hospital, police, pharmacy…") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            "Offline search uses nearby places in the bundled map.",
+                            color = Color(0xFFCFD8DC), fontSize = 12.sp
+                        )
+                        if (isSearching) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                                Text("Searching offline map…", color = Color.White, fontSize = 13.sp)
+                            }
+                        } else if (hasSearched && searchResults.isEmpty()) {
+                            Text("No match within 5 km. Try online search.", color = Color(0xFFFFCC80), fontSize = 12.sp)
+                        }
+                        if (searchResults.isNotEmpty()) {
+                            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 270.dp)) {
+                                items(searchResults) { place ->
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth().clickable {
+                                            mapTarget = place
+                                            recenterRequest++
+                                            showSearchDialog = false
+                                        }.padding(vertical = 9.dp)
+                                    ) {
+                                        Text(place.name, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                        val distanceText = if (place.distanceMeters < 1_000) {
+                                            "${place.distanceMeters.toInt()} m"
+                                        } else {
+                                            "%.1f km".format(Locale.US, place.distanceMeters / 1_000.0)
+                                        }
+                                        Text("${place.category} · $distanceText", color = Color(0xFFCFD8DC), fontSize = 12.sp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        enabled = !isSearching,
+                        onClick = {
+                            val query = searchQuery.trim()
+                            if (query.isEmpty()) {
+                                Toast.makeText(context, "Enter a place or service to search.", Toast.LENGTH_SHORT).show()
+                            } else if (currentCoordinates == null) {
+                                ensureLocation()
+                                Toast.makeText(context, "Waiting for a location fix. Try again shortly.", Toast.LENGTH_LONG).show()
+                            } else if (offlineMapFile == null) {
+                                Toast.makeText(context, "Offline map is still being prepared.", Toast.LENGTH_LONG).show()
+                            } else {
+                                val center = currentCoordinates
+                                val file = offlineMapFile
+                                if (file != null) {
+                                    isSearching = true
+                                    hasSearched = true
+                                    searchResults = emptyList()
+                                    coroutineScope.launch {
+                                        val results = withContext(Dispatchers.IO) {
+                                            searchOfflineMapPlaces(file, center, query)
+                                        }
+                                        searchResults = results
+                                        isSearching = false
+                                    }
+                                }
+                            }
+                        }
+                    ) { Text("Search offline") }
+                },
+                dismissButton = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(
+                            onClick = {
+                                val query = searchQuery.trim().ifBlank { "emergency help" }
+                                val locationText = currentCoordinates?.let { " near ${it.latitude},${it.longitude}" }.orEmpty()
+                                val uri = Uri.parse("https://www.google.com/maps/search/")
+                                    .buildUpon()
+                                    .appendQueryParameter("api", "1")
+                                    .appendQueryParameter("query", query + locationText)
+                                    .build()
+                                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+                                    .onSuccess { showSearchDialog = false }
+                                    .onFailure {
+                                        Toast.makeText(context, "No browser or maps app is available.", Toast.LENGTH_LONG).show()
+                                    }
+                            }
+                        ) { Text("Search online") }
+                        TextButton(onClick = { showSearchDialog = false }) { Text("Close") }
+                    }
+                }
+            )
+        }
     }
 }

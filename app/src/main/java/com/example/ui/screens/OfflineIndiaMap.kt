@@ -83,11 +83,18 @@ internal fun OfflineIndiaMapSurface(
     longitude: Double?,
     accuracyM: Float?,
     recenterRequest: Int,
+    focusLatitude: Double?,
+    focusLongitude: Double?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var hasCenteredOnGps by remember(mapFile) { androidx.compose.runtime.mutableStateOf(latitude != null && longitude != null) }
     var lastRecenterRequest by remember(mapFile) { androidx.compose.runtime.mutableIntStateOf(recenterRequest) }
+    var lastCenteredGps by remember(mapFile) {
+        androidx.compose.runtime.mutableStateOf(if (latitude != null && longitude != null) latitude to longitude else null)
+    }
+    var lastFocus by remember(mapFile) { androidx.compose.runtime.mutableStateOf<Pair<Double, Double>?>(null) }
+    var awaitingFreshLocation by remember(mapFile) { androidx.compose.runtime.mutableStateOf(false) }
     val mapView = remember(context, mapFile) {
         MapView(context).apply {
             setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -115,11 +122,38 @@ internal fun OfflineIndiaMapSurface(
             modifier = Modifier.matchParentSize(),
             factory = { mapView },
             update = {
-                if (latitude != null && longitude != null && (!hasCenteredOnGps || recenterRequest != lastRecenterRequest)) {
-                    it.setCenter(LatLong(latitude, longitude))
-                    it.setZoomLevel(15.toByte())
-                    hasCenteredOnGps = true
-                    lastRecenterRequest = recenterRequest
+                val gpsPosition = if (latitude != null && longitude != null) latitude to longitude else null
+                val focusPosition = if (focusLatitude != null && focusLongitude != null) focusLatitude to focusLongitude else null
+                val newRecenterRequest = recenterRequest != lastRecenterRequest
+
+                when {
+                    focusPosition != null && (focusPosition != lastFocus || newRecenterRequest) -> {
+                        it.setCenter(LatLong(focusPosition.first, focusPosition.second))
+                        it.setZoomLevel(16.toByte())
+                        lastFocus = focusPosition
+                        lastRecenterRequest = recenterRequest
+                        awaitingFreshLocation = false
+                    }
+                    newRecenterRequest -> {
+                        lastRecenterRequest = recenterRequest
+                        gpsPosition?.let { position ->
+                            it.setCenter(LatLong(position.first, position.second))
+                            it.setZoomLevel(15.toByte())
+                            lastCenteredGps = position
+                            hasCenteredOnGps = true
+                            awaitingFreshLocation = true
+                        }
+                        lastFocus = null
+                    }
+                    gpsPosition != null && (!hasCenteredOnGps || (awaitingFreshLocation && gpsPosition != lastCenteredGps)) -> {
+                        it.setCenter(LatLong(gpsPosition.first, gpsPosition.second))
+                        it.setZoomLevel(15.toByte())
+                        lastCenteredGps = gpsPosition
+                        hasCenteredOnGps = true
+                        awaitingFreshLocation = false
+                        lastFocus = null
+                    }
+                    focusPosition == null -> lastFocus = null
                 }
                 val previous = (it.tag as? List<*>)?.filterIsInstance<Layer>().orEmpty()
                 previous.forEach(it.layerManager.layers::remove)
@@ -127,6 +161,9 @@ internal fun OfflineIndiaMapSurface(
                     if (latitude != null && longitude != null) {
                         add(accuracyCircle(latitude, longitude, accuracyM))
                         add(marker(context, latitude, longitude, 0xFF1976D2.toInt()))
+                    }
+                    if (focusLatitude != null && focusLongitude != null) {
+                        add(marker(context, focusLatitude, focusLongitude, 0xFFE53935.toInt()))
                     }
                 }
                 it.layerManager.layers.addAll(markerLayers)
