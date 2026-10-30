@@ -93,7 +93,6 @@ import com.example.data.model.MeshMessage
 import com.example.data.model.TriageResult
 import com.example.ui.components.DeliveryJourneyCard
 import com.example.ui.components.EmergencyDetailsForm
-import com.example.ui.components.RescueBeaconBar
 import com.example.ui.theme.DarkSurfaceBorder
 import com.example.ui.theme.DarkSurfaceContainer
 import com.example.ui.theme.DarkSurfaceHigh

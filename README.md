@@ -4,7 +4,7 @@
 
 ![Guardian](.guardian-header.png)
 
-> **Hackathon:** AI for Vizag · Hacktoberfest Mini Hack Day · Best Open-Source AI Project / Best Use of Gemma 4
+> **Hackathon track:** Best Open-Source AI Project · This build runs Gemma 3 1B IT on device.
 
 ## The problem
 
@@ -32,13 +32,13 @@ During a flood with mobile data unavailable, a user can open Guardian’s offlin
 ## Demo flow
 
 1. Open the SOS screen and show the saved emergency contact setup.
-2. Trigger a clearly identified test or demo SOS and show the SMS status and location payload.
+2. With prior consent from a test contact, submit one demo SOS and show the app’s SMS submission status. Android submission does not confirm carrier delivery.
 3. Turn off Wi-Fi and mobile data; open the India map and show the GPS position.
 4. Ask the offline AID chat an emergency question and show that the response is generated on device.
 5. Demonstrate a rescue signal such as Morse audio or Torch SOS.
 6. Explain how Nearby relay works between Guardian phones.
 
-Use test contacts and label test messages clearly during a presentation. Do not trigger a real emergency alert as a demo.
+Use only a test contact who has agreed in advance, tell them before sending, and include “DEMO” in the incident details. Do not call 112 or send an SOS to an unsuspecting person during the presentation.
 
 ## Build and run
 
@@ -53,10 +53,12 @@ Use test contacts and label test messages clearly during a presentation. Do not 
 
 ```bash
 git lfs install
-git clone https://github.com/<your-github-username>/Guardian.git
+git clone https://github.com/polikeybhuvan/Guardian.git
 cd Guardian
 git lfs pull
 ```
+
+The India map and Gemma model are stored with Git LFS. A full checkout downloads about 2.2 GB of large assets; allow enough time, data, and disk space. The app’s offline map and on-device AI require these files.
 
 Open the `Guardian` folder in Android Studio, allow Gradle sync to finish, choose the `app` run configuration, and run it on a device.
 
@@ -64,7 +66,7 @@ On Windows, the equivalent commands are:
 
 ```powershell
 git lfs install
-git clone https://github.com/<your-github-username>/Guardian.git
+git clone https://github.com/polikeybhuvan/Guardian.git
 Set-Location Guardian
 git lfs pull
 ```
@@ -96,6 +98,8 @@ The debug APK is written to `app/build/outputs/apk/debug/`.
 
 ## Privacy and safety
 
+- SOS-note triage uses local emergency rules; AID chat runs with the bundled Gemma model. No Gemini API key or cloud AI call is required.
+- Emergency contacts, Medical ID, and SOS history stay in local app storage; Android app backup is disabled.
 - SOS messages go to contacts the user has saved.
 - Location and SMS actions depend on device permissions, GPS, SIM, cellular service, and carrier support.
 - Nearby relay is for Guardian devices with compatible radios, permissions, and relay enabled.

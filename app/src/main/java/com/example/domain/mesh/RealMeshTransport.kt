@@ -4,7 +4,6 @@ import android.content.Context
 import android.Manifest
 import android.content.pm.PackageManager
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothAdapter
 import android.net.wifi.WifiManager
 import com.example.data.model.MeshMessage
 import com.google.android.gms.nearby.Nearby
@@ -294,7 +293,7 @@ class RealMeshTransport(
     fun isBluetoothEnabled(): Boolean {
         return runCatching {
             val bm = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-            val adapter = bm?.adapter ?: BluetoothAdapter.getDefaultAdapter()
+            val adapter = bm?.adapter
             adapter?.isEnabled == true
         }.getOrDefault(false)
     }

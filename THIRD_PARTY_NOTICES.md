@@ -19,4 +19,4 @@ The bundled `gemma3-1b-it-int4.litertlm` model is Gemma 3 1B IT in LiteRT-LM dyn
 
 ## Application dependencies
 
-The Android application also uses AndroidX, Kotlin, Firebase, Google Play services, Mapsforge, LiteRT-LM, and other libraries declared in `gradle/libs.versions.toml` and `app/build.gradle.kts`. Each library retains its own license and notices.
+The Android application also uses AndroidX, Kotlin, Google Play services Location and Nearby, Mapsforge, LiteRT-LM, and other libraries declared in `gradle/libs.versions.toml` and `app/build.gradle.kts`. Each library retains its own license and notices.

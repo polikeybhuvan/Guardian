@@ -75,7 +75,7 @@ fun TacticalCompassHudDialog(
     )
 
     val targetBearing = if (targetFacility != null && currentCoordinates != null) {
-        targetFacility.bearingFrom(currentCoordinates.latitude, currentCoordinates.longitude).toFloat()
+        targetFacility.bearingFrom(currentCoordinates.latitude, currentCoordinates.longitude)
     } else 0f
 
     // Needle relative angle = targetBearing - current phone heading

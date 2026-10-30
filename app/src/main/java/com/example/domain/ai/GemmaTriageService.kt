@@ -1,27 +1,12 @@
 package com.example.domain.ai
 
-import com.example.BuildConfig
 import com.example.data.model.AlertPriority
 import com.example.data.model.EmergencyCategory
 import com.example.data.model.TriageResult
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
-import java.util.concurrent.TimeUnit
 
 class GemmaTriageService(private val offlineChatModel: OfflineGemmaChatModel? = null) {
-
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(5, TimeUnit.SECONDS)
-        .build()
 
     val offlineGemmaEngine = OfflineGemmaEngine()
 
@@ -299,101 +284,5 @@ class GemmaTriageService(private val offlineChatModel: OfflineGemmaChatModel? = 
             conditionSummary = if (isHindi) gemmaReport.conditionNameHindi else gemmaReport.conditionName,
             instructions = instructions
         )
-    }
-
-    /**
-     * Asynchronous AI-powered triage with on-device Gemma / Cloud Gemini assist.
-     * Guaranteed to fall back instantly to offline keyword heuristics if API is unavailable or offline.
-     */
-    suspend fun triageWithAiAssist(
-        category: EmergencyCategory,
-        rawNote: String,
-        peopleCount: Int
-    ): TriageResult = withContext(Dispatchers.IO) {
-        // Fast-path for empty or safe check-ins
-        if (rawNote.isBlank() || category == EmergencyCategory.SAFE || category in setOf(
-                EmergencyCategory.WOMEN_SAFETY,
-                EmergencyCategory.KIDNAPPING,
-                EmergencyCategory.THEFT,
-                EmergencyCategory.CYBER_FRAUD
-            )) {
-            return@withContext triageOffline(category, rawNote, peopleCount)
-        }
-
-        val apiKey = BuildConfig.GEMINI_API_KEY
-        if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
-            return@withContext triageOffline(category, rawNote, peopleCount)
-        }
-
-        return@withContext runCatching {
-            val prompt = """
-                You are Gemma AI Emergency Triage. Analyze this distress note.
-                Category: ${category.name}
-                People: $peopleCount
-                User Note: "$rawNote"
-
-                Output JSON only in this exact format:
-                {
-                  "priority": "P1|P2|P3|P4",
-                  "short_note": "<Concise summary in <= 140 chars in user's language>",
-                  "english_translation": "<English translation of note>",
-                  "flags": ["child", "injury", "trapped", "water", "fire"]
-                }
-            """.trimIndent()
-
-            val requestJson = JSONObject().apply {
-                put("contents", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("parts", JSONArray().apply {
-                            put(JSONObject().apply { put("text", prompt) })
-                        })
-                    })
-                })
-                put("generationConfig", JSONObject().apply {
-                    put("responseMimeType", "application/json")
-                    put("temperature", 0.1)
-                })
-            }
-
-            val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
-                .post(requestJson.toString().toRequestBody("application/json".toMediaType()))
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val body = response.body?.string() ?: throw IllegalStateException("Empty AI response")
-            val jsonRoot = JSONObject(body)
-            val text = jsonRoot.getJSONArray("candidates")
-                .getJSONObject(0)
-                .getJSONObject("content")
-                .getJSONArray("parts")
-                .getJSONObject(0)
-                .getString("text")
-
-            val parsed = JSONObject(text)
-            val prioStr = parsed.optString("priority", "P1")
-            val priority = runCatching { AlertPriority.valueOf(prioStr) }.getOrDefault(AlertPriority.P1)
-            val shortNote = parsed.optString("short_note", rawNote).take(140)
-            val translation = if (parsed.has("english_translation") && !parsed.isNull("english_translation")) parsed.getString("english_translation") else null
-            val flagsArray = parsed.optJSONArray("flags")
-            val flags = mutableListOf<String>()
-            if (flagsArray != null) {
-                for (i in 0 until flagsArray.length()) {
-                    flags.add(flagsArray.getString(i).uppercase())
-                }
-            }
-
-            TriageResult(
-                priority = priority,
-                shortNote = shortNote,
-                flags = flags,
-                detectedLanguage = "hi",
-                englishTranslation = translation,
-                isAiPowered = true
-            )
-        }.getOrElse {
-            // Immediate fallback to offline keyword heuristic
-            triageOffline(category, rawNote, peopleCount)
-        }
     }
 }

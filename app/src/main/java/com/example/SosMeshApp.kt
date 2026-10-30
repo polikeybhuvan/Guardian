@@ -37,8 +37,6 @@ class SosMeshApp : Application() {
         private set
     lateinit var morseSoundBeacon: com.example.domain.beacon.MorseSoundBeacon
         private set
-    lateinit var whistleDetector: com.example.domain.sensor.AcousticWhistleDetector
-        private set
     lateinit var walkieTalkieManager: com.example.domain.mesh.WalkieTalkieManager
         private set
     lateinit var compassManager: com.example.data.location.CompassManager
@@ -62,7 +60,6 @@ class SosMeshApp : Application() {
         smsDispatcher = com.example.data.location.SmsDispatcher(this)
         beaconController = com.example.domain.beacon.BeaconController(this)
         morseSoundBeacon = com.example.domain.beacon.MorseSoundBeacon(applicationScope)
-        whistleDetector = com.example.domain.sensor.AcousticWhistleDetector(this, applicationScope)
         walkieTalkieManager = com.example.domain.mesh.WalkieTalkieManager(this, applicationScope)
         compassManager = com.example.data.location.CompassManager(this)
         meshDatabaseRepository = com.example.data.local.MeshDatabaseRepository(

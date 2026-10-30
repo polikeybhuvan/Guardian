@@ -38,18 +38,18 @@ Guardian’s project idea is the combination: offline mapping, on-device AI guid
 ## Suggested live demo
 
 1. Show Guardian’s SOS screen and a saved test contact.
-2. Demonstrate the SMS preview/status without sending an unannounced emergency message.
+2. With prior consent from a test contact, submit one demo SOS and show the app’s SMS submission status. Android submission does not confirm carrier delivery.
 3. Disable Wi-Fi and mobile data, then open the offline map and show the GPS marker.
 4. Ask AID a relevant emergency question and show the local response.
 5. Activate Morse audio or Torch SOS and stop it using the in-app control.
 6. Explain relay using two Guardian devices if available; otherwise show the relay status and describe the device-to-device requirement.
 
-Keep the presentation focused on a working end-to-end scenario. Use test contacts, avoid initiating a real emergency call, and narrate what is happening while the app is on screen.
+Keep the presentation focused on a working end-to-end scenario. Use only a test contact who has agreed in advance, tell them before sending, and include “DEMO” in the incident details. Do not call 112 or send an SOS to an unsuspecting person during the presentation. Narrate what is happening while the app is on screen.
 
 ## Event context
 
 - AI for Vizag · Hacktoberfest Mini Hack Day
 - Sunday, November 1, 2026 · 10:00 AM–5:00 PM
-- Vizag, India
+- Vizag, India · [Venue map](https://share.google/n7Qm7n0nlzf5N34Sv)
 - Demo judging emphasizes track eligibility, working technical implementation, and clear demonstration.
 - Builder’s LinkedIn announcement: [View post](https://lnkd.in/p/dWxtn-v5)

@@ -565,16 +565,6 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `acoustic whistle detector initializes with zero confidence`() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val testScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default)
-        val detector = com.example.domain.sensor.AcousticWhistleDetector(context, testScope)
-        assertEquals(false, detector.isListening.value)
-        assertEquals(0f, detector.detectionConfidence.value)
-        assertEquals(0, detector.whistleDetectedCount.value)
-    }
-
-    @Test
     fun `medical profile stored and retrieved in Room database`() = kotlinx.coroutines.runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val db = androidx.room.Room.inMemoryDatabaseBuilder(

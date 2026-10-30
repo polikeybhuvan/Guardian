@@ -58,8 +58,8 @@ fun FirstLaunchPermissionsDialog() {
             Column {
                 Text(
                     "Choose which emergency features Guardian can use: location for SOS and maps, " +
-                        "SMS to alert your contacts, nearby access for relay, camera for torch SOS, " +
-                        "microphone for whistle detection, and notifications for alerts."
+                        "SMS to alert your contacts, nearby access for relay, camera for Torch SOS, " +
+                        "microphone for voice notes, and notifications for alerts."
                 )
                 Text(
                     "Android may show a few system permission screens. You can change access later in Settings.",

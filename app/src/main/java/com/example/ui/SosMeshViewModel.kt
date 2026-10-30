@@ -208,16 +208,10 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
 
     // New Feature Singletons
     val morseSoundBeacon = app.morseSoundBeacon
-    val whistleDetector = app.whistleDetector
     val walkieTalkieManager = app.walkieTalkieManager
 
-    // Sound Beacon & Whistle state flows
+    // Sound Beacon state
     val isMorseBeaconActive: StateFlow<Boolean> = morseSoundBeacon.isPlaying
-    val isWhistleListening: StateFlow<Boolean> = whistleDetector.isListening
-    val isWhistleStarting: StateFlow<Boolean> = whistleDetector.isStarting
-    val whistleError: StateFlow<String?> = whistleDetector.lastError
-    val whistleConfidence: StateFlow<Float> = whistleDetector.detectionConfidence
-    val whistleDetectedCount: StateFlow<Int> = whistleDetector.whistleDetectedCount
 
     // Walkie-Talkie state flows
     val isVoiceRecording: StateFlow<Boolean> = walkieTalkieManager.isRecording
@@ -458,7 +452,7 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
 
             launch {
                 _isTriageLoading.value = true
-                val aiResult = triageService.triageWithAiAssist(
+                val aiResult = triageService.triageOffline(
                     _selectedCategory.value,
                     _userNote.value,
                     _peopleCount.value
@@ -551,23 +545,6 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
         } else {
             morseSoundBeacon.start()
             meshTransport.logEvent("AUDIO_BEACON", "Synthesized Morse SOS audio beacon (900 Hz tone) STARTED")
-        }
-    }
-
-    fun toggleWhistleDetection() {
-        if (whistleDetector.isListening.value || whistleDetector.isStarting.value) {
-            whistleDetector.stopListening()
-            meshTransport.logEvent("ACOUSTIC_WHISTLE", "Acoustic disaster whistle detector STOPPED")
-        } else {
-            whistleDetector.startListening()
-            meshTransport.logEvent("ACOUSTIC_WHISTLE", "Whistle detector start requested")
-        }
-    }
-
-    fun stopWhistleDetection() {
-        if (whistleDetector.isListening.value || whistleDetector.isStarting.value) {
-            whistleDetector.stopListening()
-            meshTransport.logEvent("ACOUSTIC_WHISTLE", "Whistle detector stopped when leaving the SOS screen")
         }
     }
 

@@ -28,10 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
-/**
- * Full-screen maximum brightness strobe and thermal rescue floodlight.
- * Pulses between high-visibility emergency crimson red (#FF1744) and pure signal white.
- */
+/** Full-screen floodlight for close-range visibility. */
 @Composable
 fun FloodlightDialog(
     onDismiss: () -> Unit
@@ -55,7 +52,7 @@ fun FloodlightDialog(
                     .padding(24.dp)
                     .background(Color.Black.copy(alpha = 0.6f), CircleShape)
             ) {
-                Icon(Icons.Filled.Close, contentDescription = "Stop Strobe", tint = Color.White)
+                Icon(Icons.Filled.Close, contentDescription = "Close floodlight", tint = Color.White)
             }
 
             Column(
