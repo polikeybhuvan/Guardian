@@ -1,136 +1,109 @@
 # Guardian
 
-**Prepared to act when help is still on the way.** Guardian is an Android emergency-support app that brings SOS messaging, an offline India map, offline first-aid guidance, and practical rescue tools into one place.
+**Prepared to act when help is still on the way.** Guardian is an Android emergency-support prototype that brings contact-based SOS, an offline India map, on-device emergency guidance, and practical rescue tools into one app.
 
-![Guardian](.guardian-header.png)
+![Guardian project banner](.guardian-header.png)
 
-> **Hackathon track:** Best Open-Source AI Project · This build runs Gemma 3 1B IT on device.
+[Download the Android test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk) · [Install and test](docs/INSTALL_AND_TEST.md) · [Hackathon brief and demo](docs/HACKATHON.md)
 
 ## The problem
 
-In a crisis, people may have to act with limited connectivity, share their location quickly, and decide what to do next. Essential actions can be scattered across different apps and tools, adding friction when time and clear information matter.
+During a disaster or personal emergency, people may have limited internet, need to share their location quickly, and be unsure what to do next. Emergency contacts, offline maps, first-aid guidance, and signaling tools are often spread across separate apps.
 
-## The project
+## What Guardian does
 
-Guardian is an offline-first Android toolkit for personal safety, medical emergencies, and disasters. It helps users contact people they trust, understand their position without mobile data, and access emergency guidance and signaling tools from one app.
+Guardian brings practical first steps together for emergencies in India, including disasters, medical incidents, and personal-safety situations.
 
-## How Guardian helps
+| Need | Guardian feature |
+| --- | --- |
+| Alert trusted people | SOS flow has a five-second cancel window, then sends an emergency message and available location to contacts the user saved. |
+| Navigate without mobile data | Bundled India map with the phone’s GPS position. |
+| Get emergency-focused guidance | AID chat runs Gemma 3 1B IT locally; curated emergency guidance is available offline. |
+| Signal or orient yourself | Siren, Morse Audio, Torch SOS, Floodlight, Medical ID, Compass HUD, and Link Emergency Contacts. |
+| Relay between nearby users | Nearby relay can connect Guardian phones when the required radios, permissions, and connectivity are available. |
 
-- **SOS to trusted contacts:** Save the incident and submit a location-aware SMS to selected emergency contacts.
-- **India offline map:** View the bundled OpenStreetMap-based map and the phone’s GPS position without an internet connection.
-- **On-device AI guidance:** Ask emergency-focused questions with the bundled Gemma 3 1B model; curated first-aid guidance remains available offline.
-- **Rescue tools in one place:** Siren, Morse audio, Torch SOS, Floodlight, Medical ID, Compass HUD, nearby relay, and emergency contacts.
-- **Nearby Guardian relay:** Discover and relay messages to nearby phones running Guardian when both devices have relay enabled and required radios and permissions are available.
-- **Quick access to help:** Keep India’s 112 emergency number within reach.
+Guardian complements official emergency response. It sends SOS messages to saved contacts; it does not directly dispatch police, fire, or ambulance services. For immediate danger in India, call **112** when possible.
 
-Guardian complements emergency services: it gives people practical tools to use while seeking help. It does not claim to dispatch responders.
+## Example
 
-## Example scenario
+If someone is stranded during flooding with mobile data unavailable, they can check their position on the offline map, send an SOS and location by SMS to saved contacts when cellular SMS is available, consult offline guidance, and use a torch or Morse signal to attract attention.
 
-During a flood with mobile data unavailable, a user can open Guardian’s offline map to check their GPS position, send an SOS and location by SMS to saved contacts when cellular SMS is available, and consult offline guidance. They can also use a torch or Morse signal to attract attention and call 112 for emergency response.
+## Try the working prototype
 
-## Demo flow
+The current GitHub release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model. The APK is about **1.57 GiB**, and the app needs additional storage while it prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it with testers. Keep Play Protect enabled; some phones may block direct sideloading of this test build because it requests SMS permission.
 
-1. Open the SOS screen and show the saved emergency contact setup.
-2. With prior consent from a test contact, submit one demo SOS and show the app’s SMS submission status. Android submission does not confirm carrier delivery.
-3. Turn off Wi-Fi and mobile data; open the India map and show the GPS position.
-4. Ask the offline AID chat an emergency question and show that the response is generated on device.
-5. Demonstrate a rescue signal such as Morse audio or Torch SOS.
-6. Explain how Nearby relay works between Guardian phones.
+- [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk)
+- [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.1-test)
+- SHA-256: `3A36CBE0216E3B1C93BFEB1012FED1651257344D1245F2ED226505260CD5B627`
 
-Use only a test contact who has agreed in advance, tell them before sending, and include “DEMO” in the incident details. Do not call 112 or send an SOS to an unsuspecting person during the presentation.
-
-## Download the Android test build
-
-[Download Guardian 1.0.1 for Android testing](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.1-test/Guardian-Android-Test-1.0.1.apk)
-
-This debug/test APK bundles the Gemma model and India offline map, so the download is about 1.57 GiB and the phone needs additional free storage during installation and first map setup. It is intended for testing and demos, not as a Play Store production release. Review and grant only the Android permissions you want Guardian to use.
-
-SHA-256: `3A36CBE0216E3B1C93BFEB1012FED1651257344D1245F2ED226505260CD5B627`
-
-## Build and run
+## Build from source
 
 ### Requirements
 
-- Android Studio with Android SDK Platform 36 (API 36.1)
-- JDK 25, matching the Gradle daemon JVM configured for this project
-- Git LFS to retrieve the bundled offline map and Gemma model
-- Android device or emulator running Android 7.0 (API 24) or newer
+- Android Studio and Android SDK Platform 36 (API 36.1)
+- JDK 25 (the Gradle daemon toolchain is configured for Java 25)
+- Git and Git LFS
+- An Android 7.0 (API 24) or newer device or emulator
+- At least several GB of free disk space for the source assets and app setup
 
-### Clone
+The map and Gemma model are stored in Git LFS. A full checkout downloads about 2.2 GB of large assets.
 
 ```bash
 git lfs install
 git clone https://github.com/polikeybhuvan/Guardian.git
 cd Guardian
 git lfs pull
+./gradlew :app:assembleDebug
 ```
 
-The India map and Gemma model are stored with Git LFS. A full checkout downloads about 2.2 GB of large assets; allow enough time, data, and disk space. The app’s offline map and on-device AI require these files.
-
-Open the `Guardian` folder in Android Studio, allow Gradle sync to finish, choose the `app` run configuration, and run it on a device.
-
-On Windows, the equivalent commands are:
+On Windows PowerShell:
 
 ```powershell
 git lfs install
 git clone https://github.com/polikeybhuvan/Guardian.git
 Set-Location Guardian
 git lfs pull
+.\gradlew.bat :app:assembleDebug
 ```
 
-The India map is copied from the app assets into private app storage when the map screen is first opened. Allow the initial copy to complete and keep sufficient free storage for the bundled map and its installed copy. The Gemma model is included with the app and is prepared for local use; first-run initialization can take time on some phones.
+The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. For Android Studio, open the cloned `Guardian` folder, let Gradle sync finish, select the `app` run configuration, and run it on a connected device. The map is copied into app storage the first time its screen is opened; the offline model is prepared for local use on first launch/use.
 
-### Build from the command line
+See [Installation and testing](docs/INSTALL_AND_TEST.md) for the USB/ADB procedure, offline checks, and troubleshooting. See [Releasing a test build](docs/RELEASING.md) before preparing an APK for GitHub Releases.
 
-```bash
-./gradlew assembleDebug
-```
+## Technical overview
 
-Windows PowerShell:
+- **UI:** Kotlin and Jetpack Compose
+- **Local data:** Room database and app-private storage
+- **Offline map:** Mapsforge with OpenStreetMap map data and device GPS
+- **On-device AI:** LiteRT-LM with Gemma 3 1B IT; no Gemini API key or cloud AI request is needed for AID chat
+- **Nearby relay:** Google Nearby Connections between Guardian phones
+- **Safety actions:** Android SMS, location, camera torch, audio, and sensor APIs
 
-```powershell
-.\gradlew.bat assembleDebug
-```
+## Hackathon track
 
-The debug APK is written to `app/build/outputs/apk/debug/`.
-
-## Technology
-
-- Kotlin and Jetpack Compose
-- Android location, SMS, camera torch, audio, sensors, and permissions APIs
-- Room for local data
-- Mapsforge with OpenStreetMap map data for offline mapping
-- LiteRT-LM with Gemma 3 1B IT for on-device language-model inference
-- Google Nearby Connections for phone-to-phone relay
+Guardian is presented for **Best Open-Source AI Project**. This repository bundles **Gemma 3 1B IT** for on-device emergency chat; it is not a Gemma 4 build. See the [project brief and demo flow](docs/HACKATHON.md).
 
 ## Privacy and safety
 
-- SOS-note triage uses local emergency rules; AID chat runs with the bundled Gemma model. No Gemini API key or cloud AI call is required.
-- Emergency contacts, Medical ID, and SOS history stay in local app storage; Android app backup is disabled.
-- SOS messages go to contacts the user has saved.
-- Location and SMS actions depend on device permissions, GPS, SIM, cellular service, and carrier support.
-- Nearby relay is for Guardian devices with compatible radios, permissions, and relay enabled.
-- Offline first-aid and AI guidance are informational; contact emergency services for urgent assistance.
-- In India, call **112** for immediate emergency response.
+- Emergency contacts, Medical ID, and SOS history are stored in local app storage; Android backup is disabled.
+- The user chooses saved contacts and starts the SOS flow. Android reporting that an SMS was submitted does not confirm delivery to the recipient.
+- Location, SMS, and device-tool behavior depends on permissions and hardware. SMS requires a working SIM, carrier service, and a compatible device.
+- Nearby relay works between Guardian phones only; it cannot alert nearby phones that do not have Guardian installed.
+- AID is informational emergency guidance, not a medical diagnosis. Contact emergency services in an emergency.
 
-## Project links
+## Data, model, and source licenses
 
-- **Builder’s LinkedIn selection announcement:** [View post](https://lnkd.in/p/dWxtn-v5)
-- **India emergency response system:** [112.gov.in](https://112.gov.in/)
-- **Gemma model:** [Gemma 3 1B IT on Hugging Face](https://huggingface.co/litert-community/Gemma3-1B-IT)
+Guardian’s original source code is licensed under Apache-2.0; see [LICENSE](LICENSE). The bundled India map data is © OpenStreetMap contributors and distributed under ODbL. The Gemma model is distributed under the Gemma Terms of Use and Prohibited Use Policy. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the notices bundled in `app/src/main/assets/`.
 
-## Data and model acknowledgements
+## Project documents
 
-- Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), distributed under the [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/).
-- The bundled Gemma 3 1B IT model is provided under the [Gemma Terms of Use](https://ai.google.dev/gemma/terms) and [Prohibited Use Policy](https://ai.google.dev/gemma/prohibited_use_policy). The required notices are included in `app/src/main/assets/`.
+- [Installation and testing guide](docs/INSTALL_AND_TEST.md)
+- [Hackathon problem, impact, and demo brief](docs/HACKATHON.md)
+- [Test-build release checklist](docs/RELEASING.md)
+- [Contribution guidelines](CONTRIBUTING.md)
 
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for asset acknowledgements and [docs/HACKATHON.md](docs/HACKATHON.md) for the project pitch and demo notes.
+## Links
 
-## Contributing
-
-Contributions that improve clarity, accessibility, reliability, localization, and emergency preparedness are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening an issue or pull request.
-
-## License
-
-Guardian’s original source code is licensed under Apache-2.0. Bundled map data, the Gemma model, and dependencies are subject to their own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- [Builder’s LinkedIn selection announcement](https://lnkd.in/p/dWxtn-v5)
+- [India emergency response system: 112](https://112.gov.in/)
+- [Gemma 3 1B IT model](https://huggingface.co/litert-community/Gemma3-1B-IT)

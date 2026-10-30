@@ -1,5 +1,7 @@
 # Hackathon project brief
 
+For the APK download, device setup, and reproducible demo checks, see [Installation and testing](INSTALL_AND_TEST.md). The source build and GitHub test-release process are in [Releasing a test build](RELEASING.md).
+
 ## Problem statement
 
 During a disaster or personal emergency, people may have limited internet access, need to share their location quickly, and face uncertainty about what to do next. Emergency contacts, offline maps, first-aid guidance, and ways to signal for help can be spread across separate tools, adding friction when time matters.
