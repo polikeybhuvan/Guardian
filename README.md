@@ -40,6 +40,12 @@ During a flood with mobile data unavailable, a user can open Guardian’s offlin
 
 Use only a test contact who has agreed in advance, tell them before sending, and include “DEMO” in the incident details. Do not call 112 or send an SOS to an unsuspecting person during the presentation.
 
+## Download the Android test build
+
+[Download Guardian 1.0.0 for Android testing](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.0-test/Guardian-Android-Test-1.0.0.apk)
+
+This debug/test APK bundles the Gemma model and India offline map, so the download is about 1.57 GiB and the phone needs additional free storage during installation and first map setup. It is intended for testing and demos, not as a Play Store production release. Review and grant only the Android permissions you want Guardian to use.
+
 ## Build and run
 
 ### Requirements
