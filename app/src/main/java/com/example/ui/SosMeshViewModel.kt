@@ -403,70 +403,133 @@ class SosMeshViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun dispatchSosAlert() {
+        val category = _selectedCategory.value
+        val peopleCount = _peopleCount.value
+        val note = _userNote.value.trim()
+        val priority = _triagePreview.value?.priority ?: AlertPriority.P1
+
+        // SMS must not depend on nearby-radio, database, or hotspot setup succeeding.
         viewModelScope.launch {
-            routingEngine.startTransport()
-            val currentPrio = _triagePreview.value?.priority ?: AlertPriority.P1
-            val coords = app.locationHelper.getCurrentCoordinates()
-            val baseMessage = MeshMessage(
-                type = MessageType.SOS,
-                category = _selectedCategory.value,
-                priority = currentPrio,
-                senderId = app.cryptoSigner.getDeviceId(),
-                latitude = coords?.latitude,
-                longitude = coords?.longitude,
-                accuracyM = coords?.accuracyM,
-                peopleCount = _peopleCount.value,
-                note = _userNote.value.ifBlank { "${_selectedCategory.value.displayName} - ${_peopleCount.value} people" },
-                ttl = if (currentPrio == AlertPriority.P1) 12 else 8
+            dispatchSosSms(category, peopleCount, note)
+        }
+        viewModelScope.launch {
+            dispatchLocalSos(category, peopleCount, note, priority)
+        }
+    }
+
+    private suspend fun dispatchSosSms(
+        category: EmergencyCategory,
+        peopleCount: Int,
+        note: String
+    ) {
+        val contacts = try {
+            emergencyContactDao.getAllContacts()
+        } catch (error: Exception) {
+            val failure = SmsDispatchResult(
+                isSuccess = false,
+                sentCount = 0,
+                failedCount = 0,
+                messageText = "",
+                error = error.message ?: "Could not load your emergency contacts."
             )
+            _lastSmsResult.value = failure
+            runCatching { meshTransport.logEvent("SOS_SMS_FAILED", failure.error.orEmpty()) }
+            return
+        }
 
-            val originated = routingEngine.originateAlert(baseMessage)
+        val coordinates = _currentCoordinates.value ?: app.locationHelper.getLastKnownCoordinates()
+        val distressMessage = smsDispatcher.composeDistressMessage(
+            category = category,
+            peopleCount = peopleCount,
+            note = note,
+            coordinates = coordinates,
+            nearestHospital = null,
+            nearestPolice = null,
+            nearestRelief = null
+        )
+        val result = try {
+            smsDispatcher.sendDirectSms(contacts, distressMessage)
+        } catch (error: Exception) {
+            SmsDispatchResult(
+                isSuccess = false,
+                sentCount = 0,
+                failedCount = contacts.size,
+                messageText = distressMessage,
+                error = error.message ?: "Android could not submit the SOS SMS."
+            )
+        }
 
-            // Start Open Perimeter Wi-Fi Emergency Beacon (visible to surrounding devices scanning Wi-Fi)
-            wifiEmergencyBeaconManager.startEmergencyBeacon(coords?.latitude, coords?.longitude, _selectedCategory.value.name)
+        _lastSmsResult.value = result
+        runCatching {
+            meshTransport.logEvent(
+                if (result.isSuccess) "SOS_SMS_SUBMITTED" else "SOS_SMS_FAILED",
+                "SMS submission result: ${result.sentCount} submitted to Android, ${result.failedCount} failed"
+            )
+        }
+    }
 
-            // Auto-dispatch SOS SMS with Live GPS & Nearest Hospital / Police / Relief
-            launch {
-                val contacts = emergencyContactDao.getAllContacts()
-                val hosp = emergencyCentersRepository.getNearestHospital(coords?.latitude, coords?.longitude)
-                val police = emergencyCentersRepository.getNearestPoliceStation(coords?.latitude, coords?.longitude)
-                val relief = emergencyCentersRepository.getNearestReliefCamp(coords?.latitude, coords?.longitude)
-
-                val distressMsg = smsDispatcher.composeDistressMessage(
-                    category = _selectedCategory.value,
-                    peopleCount = _peopleCount.value,
-                    note = _userNote.value.ifBlank { "${_selectedCategory.value.displayName} - ${_peopleCount.value} people" },
-                    coordinates = coords,
-                    nearestHospital = hosp,
-                    nearestPolice = police,
-                    nearestRelief = relief
-                )
-
-                val smsResult = smsDispatcher.sendDirectSms(contacts, distressMsg)
-                _lastSmsResult.value = smsResult
-                meshTransport.logEvent(
-                    "SOS_SMS_BROADCAST",
-                    "SMS submission result: ${smsResult.sentCount} submitted to Android, ${smsResult.failedCount} failed"
-                )
+    private suspend fun dispatchLocalSos(
+        category: EmergencyCategory,
+        peopleCount: Int,
+        note: String,
+        priority: AlertPriority
+    ) {
+        runCatching { routingEngine.startTransport() }
+            .onFailure { error ->
+                runCatching {
+                    meshTransport.logEvent("SOS_RELAY_UNAVAILABLE", error.message ?: "Nearby relay could not start.")
+                }
             }
 
-            launch {
-                _isTriageLoading.value = true
-                val aiResult = triageService.triageOffline(
-                    _selectedCategory.value,
-                    _userNote.value,
-                    _peopleCount.value
-                )
-                _triagePreview.value = aiResult
-                _isTriageLoading.value = false
+        val coordinates = _currentCoordinates.value ?: app.locationHelper.getLastKnownCoordinates()
+        val baseMessage = MeshMessage(
+            type = MessageType.SOS,
+            category = category,
+            priority = priority,
+            senderId = app.cryptoSigner.getDeviceId(),
+            latitude = coordinates?.latitude,
+            longitude = coordinates?.longitude,
+            accuracyM = coordinates?.accuracyM,
+            peopleCount = peopleCount,
+            note = note.ifBlank { "${category.displayName} - $peopleCount people" },
+            ttl = if (priority == AlertPriority.P1) 12 else 8
+        )
 
-                if (aiResult.priority.level < originated.priority.level) {
-                    val updated = originated.copy(
-                        priority = aiResult.priority,
-                        note = aiResult.shortNote
-                    )
-                    alertDao.updateMessage(MeshMessageEntity.fromDomain(updated, isLocalOrigin = true))
-                }
+        val originated = try {
+            routingEngine.originateAlert(baseMessage)
+        } catch (error: Exception) {
+            runCatching {
+                meshTransport.logEvent("SOS_LOCAL_SAVE_FAILED", error.message ?: "SOS could not be cached locally.")
+            }
+            null
+        }
+
+        runCatching {
+            wifiEmergencyBeaconManager.startEmergencyBeacon(coordinates?.latitude, coordinates?.longitude, category.name)
+        }.onFailure { error ->
+            runCatching {
+                meshTransport.logEvent("SOS_WIFI_BEACON_UNAVAILABLE", error.message ?: "Emergency hotspot could not start.")
+            }
+        }
+
+        if (originated == null) return
+
+        _isTriageLoading.value = true
+        val aiResult = try {
+            triageService.triageOffline(category, note, peopleCount)
+        } catch (_: Exception) {
+            null
+        } finally {
+            _isTriageLoading.value = false
+        }
+        if (aiResult != null) {
+            _triagePreview.value = aiResult
+            if (aiResult.priority.level < originated.priority.level) {
+                val updated = originated.copy(
+                    priority = aiResult.priority,
+                    note = aiResult.shortNote
+                )
+                alertDao.updateMessage(MeshMessageEntity.fromDomain(updated, isLocalOrigin = true))
             }
         }
     }

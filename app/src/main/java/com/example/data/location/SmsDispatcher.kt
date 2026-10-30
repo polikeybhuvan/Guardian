@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import com.example.data.local.EmergencyContactEntity
 import com.example.data.model.EmergencyCategory
 import com.example.data.model.EmergencyCenter
+import kotlin.math.roundToInt
 import java.util.Locale
 
 data class SmsDispatchResult(
@@ -31,39 +32,25 @@ class SmsDispatcher(private val context: Context) {
         nearestPolice: EmergencyCenter?,
         nearestRelief: EmergencyCenter?
     ): String {
-        val sb = StringBuilder()
-        sb.append("🚨 [EMERGENCY SOS DISTRESS ALERT] 🚨\n")
-        sb.append("Incident: ${category.displayName} ($peopleCount ${if (peopleCount == 1) "person" else "people"})\n")
+        // Keep the core alert short and plain-text so it normally fits in one SMS segment.
+        // Long Unicode/multipart messages are more likely to be delayed or dropped by carriers.
+        // Facility records are not verified, so they are intentionally omitted from SOS SMS.
+        val incident = category.displayName.replace(Regex("\\s+"), " ").trim().take(32)
+        val location = coordinates?.let {
+            "https://maps.google.com/?q=${String.format(Locale.US, "%.5f", it.latitude)},${String.format(Locale.US, "%.5f", it.longitude)}"
+        } ?: "GPS unavailable"
+        val accuracy = coordinates?.accuracyM
+            ?.takeIf { it.isFinite() && it >= 0f }
+            ?.let { " +/-${it.roundToInt()}m" }
+            .orEmpty()
+        val core = "GUARDIAN SOS: $incident; ${peopleCount.coerceAtLeast(1)}p; $location$accuracy; call 112"
+        val cleanNote = note.replace(Regex("\\s+"), " ").trim()
+        if (cleanNote.isEmpty()) return core
 
-        if (note.isNotBlank()) {
-            sb.append("Details: ${note.trim()}\n")
-        }
-
-        if (coordinates != null) {
-            sb.append("Live Location: https://maps.google.com/?q=${coordinates.latitude},${coordinates.longitude}\n")
-            sb.append("GPS Coords: ${String.format(Locale.US, "%.5f", coordinates.latitude)}, ${String.format(Locale.US, "%.5f", coordinates.longitude)} (±${coordinates.accuracyM.toInt()}m)\n")
-        } else {
-            sb.append("Live Location: [GPS acquiring...]\n")
-        }
-
-        nearestHospital?.let { hosp ->
-            val dist = hosp.formattedDistance(coordinates?.latitude, coordinates?.longitude)
-            sb.append("Nearest Hospital: ${hosp.name} ($dist) Ph: ${hosp.phoneNumber}\n")
-        }
-
-        nearestPolice?.let { pol ->
-            val dist = pol.formattedDistance(coordinates?.latitude, coordinates?.longitude)
-            sb.append("Nearest Police: ${pol.name} ($dist) Ph: ${pol.phoneNumber}\n")
-        }
-
-        nearestRelief?.let { rel ->
-            val dist = rel.formattedDistance(coordinates?.latitude, coordinates?.longitude)
-            sb.append("Nearest Relief: ${rel.name} ($dist) Ph: ${rel.phoneNumber}\n")
-        }
-
-        sb.append("This SMS goes only to your saved Guardian contacts; it does not alert police or dispatch help. ")
-        sb.append("If there is immediate danger in India, call 112.")
-        return sb.toString()
+        val separator = "; "
+        val availableNoteLength = (160 - core.length - separator.length).coerceAtLeast(0)
+        val shortNote = cleanNote.take(minOf(36, availableNoteLength))
+        return if (shortNote.isEmpty()) core else "$core$separator$shortNote"
     }
 
     fun hasSmsPermission(): Boolean {
@@ -103,14 +90,30 @@ class SmsDispatcher(private val context: Context) {
         val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(SmsManager::class.java)
         } else {
-            @Suppress("DEPRECATION")
-            SmsManager.getDefault()
-        }
+            legacyDefaultSmsManager()
+        } ?: return SmsDispatchResult(
+            isSuccess = false,
+            sentCount = 0,
+            failedCount = contacts.size,
+            messageText = messageText,
+            error = "SMS service is unavailable on this device."
+        )
 
         var sentCount = 0
         var failedCount = 0
 
-        val parts = smsManager.divideMessage(messageText)
+        val parts = try {
+            smsManager.divideMessage(messageText)
+        } catch (error: Exception) {
+            return SmsDispatchResult(
+                isSuccess = false,
+                sentCount = 0,
+                failedCount = contacts.size,
+                messageText = messageText,
+                error = error.message ?: "Android could not prepare the SOS SMS."
+            )
+        }
+        var firstError: String? = null
 
         for (contact in contacts) {
             val cleanPhone = contact.phoneNumber.replace("[^0-9+]".toRegex(), "")
@@ -126,8 +129,9 @@ class SmsDispatcher(private val context: Context) {
                     smsManager.sendTextMessage(cleanPhone, null, messageText, null, null)
                 }
                 sentCount++
-            } catch (e: Exception) {
+            } catch (error: Exception) {
                 failedCount++
+                if (firstError == null) firstError = error.message ?: error.javaClass.simpleName
             }
         }
 
@@ -136,7 +140,7 @@ class SmsDispatcher(private val context: Context) {
             sentCount = sentCount,
             failedCount = failedCount,
             messageText = messageText,
-            error = if (failedCount > 0 && sentCount == 0) "Failed to transmit SMS to contacts" else null
+            error = if (failedCount > 0) firstError ?: "Android could not submit the SMS to every contact." else null
         )
     }
 
@@ -151,4 +155,7 @@ class SmsDispatcher(private val context: Context) {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
     }
+
+    @Suppress("DEPRECATION")
+    private fun legacyDefaultSmsManager(): SmsManager = SmsManager.getDefault()
 }

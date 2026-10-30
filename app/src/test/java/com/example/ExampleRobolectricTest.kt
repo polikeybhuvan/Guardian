@@ -6,6 +6,7 @@ import com.example.data.model.AlertPriority
 import com.example.data.model.EmergencyCategory
 import com.example.domain.ai.GemmaTriageService
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -72,12 +73,37 @@ class ExampleRobolectricTest {
             nearestRelief = relief
         )
 
-        assertTrue(msg.contains("EMERGENCY SOS DISTRESS ALERT"))
+        assertTrue(msg.startsWith("GUARDIAN SOS:"))
         assertTrue(msg.contains(EmergencyCategory.FLOOD.displayName))
-        assertTrue(msg.contains("3 people"))
-        assertTrue(msg.contains("https://maps.google.com/?q=28.6139,77.209"))
-        assertTrue(!msg.contains("Nearest Hospital"))
-        assertTrue(!msg.contains("Nearest Police"))
+        assertTrue(msg.contains("3p"))
+        assertTrue(msg.contains("https://maps.google.com/?q=28.61390,77.20900"))
+        assertTrue(msg.contains("call 112"))
+        assertTrue(msg.length <= 160)
+        assertFalse(msg.contains("🚨"))
+        assertFalse(msg.contains("Nearest Hospital"))
+        assertFalse(msg.contains("Nearest Police"))
+    }
+
+    @Test
+    fun `distress SMS keeps location and emergency number when long notes are truncated`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val dispatcher = com.example.data.location.SmsDispatcher(context)
+        val coordinates = com.example.data.location.DeviceCoordinates(20.1714, 85.7110, 8.5f)
+
+        val message = dispatcher.composeDistressMessage(
+            category = EmergencyCategory.MEDICAL,
+            peopleCount = 1,
+            note = "TEST ONLY " + "details ".repeat(80),
+            coordinates = coordinates,
+            nearestHospital = null,
+            nearestPolice = null,
+            nearestRelief = null
+        )
+
+        assertTrue(message.length <= 160)
+        assertTrue(message.contains("https://maps.google.com/?q=20.17140,85.71100"))
+        assertTrue(message.contains("call 112"))
+        assertTrue(message.contains("TEST ONLY"))
     }
 
     @Test
