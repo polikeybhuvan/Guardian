@@ -2,27 +2,45 @@
 
 This guide is for hackathon reviewers and people testing Guardian on an Android phone. Guardian is Android-only.
 
-## Choose an installation route
+## Fast install options
 
-### Route 1: Download the test APK
+Both options install the same Guardian APK. Start with the normal Android install prompt. Use the second option only if Play Protect blocks this verified test build.
 
-Download the [Guardian 1.0.2 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.2-test/Guardian-Android-Test-1.0.2.apk) from GitHub. It is about **1.57 GiB**. Keep several GB of free space available because the app prepares the map and AI model in app storage.
+### Option 1: Normal direct install
+
+Download the [Guardian 1.0.3 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.3-test/Guardian-Android-Test-1.0.3.apk) from GitHub, verify its SHA-256, open it from Downloads, and follow Android’s installer prompts. If asked, allow the browser or file manager to install unknown apps.
+
+### Option 2: Direct install if Play Protect blocks the APK
+
+Use this only for the Guardian APK downloaded from the release link above, after verifying its SHA-256. Turn Play Protect scanning back on immediately after installation.
+
+1. On the phone, open the **Google Play Store** and tap the profile icon.
+2. Open **Play Protect**, then tap the settings gear.
+3. Temporarily turn off **Scan apps with Play Protect** and confirm the prompt. Menu names can vary slightly by Android/Play Store version.
+4. Open the verified Guardian APK from Downloads and install it.
+5. Return to **Play Protect settings** and turn **Scan apps with Play Protect** back on.
+
+See [Google Play Protect help](https://support.google.com/googleplay/answer/2812853?hl=en) if the menus differ. If you prefer not to change Play Protect settings, use the ADB route below.
+
+## Verify the APK
+
+The APK is about **1.57 GiB**. Keep several GB of free space available because the app prepares the map and AI model in app storage.
 
 Before installing, verify the downloaded file’s SHA-256 hash:
 
 ```powershell
-Get-FileHash .\Guardian-Android-Test-1.0.2.apk -Algorithm SHA256
+Get-FileHash .\Guardian-Android-Test-1.0.3.apk -Algorithm SHA256
 ```
 
 Expected hash:
 
 ```text
-2481800A48AF0EA6E2D0F31A77DB0A61C83557C6332C4ED5FF0915857B8C63D4
+E0A47342B472B334D3348408BB4730657CE058A4A41E5FD26101F7239B71453A
 ```
 
-On the phone, open the downloaded APK and follow Android’s installation prompts if it allows the install. This is a debug-signed test build and requests SMS permission for emergency alerts, so Play Protect may warn or block a direct Chrome/Files install on some devices. **Keep Play Protect enabled.** If the system blocks the install, use Route 2 or the limited-distribution option below; do not download a copy from an unofficial mirror.
+## Other installation routes
 
-### Route 2: Install with Android Debug Bridge (ADB)
+### Route 3: Install with Android Debug Bridge (ADB)
 
 ADB is Android’s standard developer workflow for installing and testing an APK. It worked on the project owner’s Nothing phone.
 
@@ -37,25 +55,25 @@ ADB is Android’s standard developer workflow for installing and testing an APK
 4. Install the APK. Replace the example path with the APK’s actual location:
 
    ```powershell
-   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.2.apk"
+   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.3.apk"
    ```
 
 For macOS or Linux, use `./adb` instead of `.\adb.exe`:
 
 ```bash
 ./adb devices
-./adb install -r ~/Downloads/Guardian-Android-Test-1.0.2.apk
+./adb install -r ~/Downloads/Guardian-Android-Test-1.0.3.apk
 ```
 
-If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.2.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
+If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.3.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
 
 ADB is a developer installation route, not a Play Store review or malware certification. Play Protect can still scan apps after installation.
 
-### Route 3: Free limited distribution for a small tester group
+### Route 4: Free limited distribution for a small tester group
 
 Google’s [Android Developer Console limited-distribution account](https://developer.android.com/developer-verification/guides/limited-distribution) is designed for students and hobbyists. It is free and supports up to **20 explicitly authorized devices**. It requires a Google account with 2-Step Verification, a linked payments profile, and a contact email; it does not require government ID.
 
-Create the limited account, register the app package and signing key as prompted, then authorize each tester’s phone through the Console’s QR-code or link flow. Share the same GitHub APK with those authorized testers. This is limited sharing, not public Play Store publishing, and it may not suppress a separate Play Protect warning for SMS permission. If package registration or installation is blocked, use ADB for the hackathon test.
+Create the limited account, register the app package and signing key as prompted, then authorize each tester’s phone through the Console’s QR-code or link flow. Share the same GitHub APK with those authorized testers. This is limited sharing, not public Play Store publishing, and it may not suppress a separate Play Protect warning for SMS permission. If package registration or installation is blocked, use Route 3 (ADB) for the hackathon test.
 
 For unrestricted public distribution through Google Play, a Play Console developer account is required. Google currently charges a one-time **US$25** registration fee; Guardian would also need to complete Google Play’s SMS-permission declaration and review. See [Google’s account setup requirements](https://support.google.com/googleplay/android-developer/answer/6112435?hl=en-EN).
 
@@ -63,9 +81,10 @@ For unrestricted public distribution through Google Play, a Play Console develop
 
 1. Open Guardian and follow the permission setup prompts. Grant only the permissions needed for the features you plan to test.
 2. Add an emergency contact who has agreed to receive test messages.
-3. Confirm location is enabled and allow Guardian to use it for the SOS and map.
-4. Keep a working SIM and cellular service available when testing SMS. Wi-Fi alone does not send SMS.
-5. Allow the map/model setup to finish. The first map opening copies the bundled India map into app storage; AID prepares the bundled Gemma model for offline use.
+3. Allow Guardian to send SMS when Android asks. If SMS was denied, open **Settings → Apps → Guardian → Permissions → SMS** and allow it; on some phones the SMS setting may appear under a slightly different label.
+4. Confirm location is enabled and allow Guardian to use it for the SOS and map.
+5. Keep a working SIM and cellular service available when testing SMS. Wi-Fi alone does not send SMS.
+6. Allow the map/model setup to finish. The first map opening copies the bundled India map into app storage; AID prepares the bundled Gemma model for offline use.
 
 ## Short test checklist
 
@@ -86,10 +105,10 @@ Use a test contact who explicitly agreed beforehand. Put `DEMO` in the test inci
 | `adb devices` shows `unauthorized` | Unlock the phone, accept the USB debugging prompt, then run the command again. |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | The installed app was signed with a different key. Uninstall it and install this build; local app data will be erased. |
 | Not enough storage | Free several GB, then retry. The APK is 1.57 GiB and the app creates app-private copies of its offline assets. |
-| Play Protect blocks Chrome/Files installation | Keep protection enabled. Verify the SHA-256 above and use the ADB developer route or a limited-distribution device invitation. |
+| Play Protect blocks Chrome/Files installation | Verify the APK SHA-256. Use Option 2 to pause scanning just for this install and re-enable it immediately, or use the ADB route if you prefer to keep scanning enabled. |
 | Map does not appear | Confirm first-run map setup completed, location permission and GPS are enabled, and the phone has enough free storage. Mobile data is not required to render the bundled map. |
 | Location is missing or inaccurate | Enable device location, grant Guardian location permission, and wait for a GPS fix; test outdoors with a clear view of the sky. |
-| SMS is not submitted | Check the saved number, SMS permission, SIM, cellular signal, and carrier support. An app submission status is not a carrier delivery receipt. |
+| SMS is not submitted | Check the saved number, allow SMS under Android app permissions, and confirm a working SIM, cellular signal, and carrier support. An app submission status is not a carrier delivery receipt. |
 | AID is still preparing | Keep the app open and allow time for the 584 MB model to be copied and initialized. No Gemini API key is used. |
 | Relay finds no peer | Confirm Guardian is installed on the second phone, nearby permissions are granted, and Bluetooth/Wi-Fi radios are on. Test with both phones close together. |
 

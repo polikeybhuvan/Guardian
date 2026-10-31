@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -66,6 +67,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -187,7 +189,13 @@ fun CitizenSosScreen(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         // SOS remains available even if the user denies one or more permissions.
-        if (results.values.any { !it }) {
+        if (results[Manifest.permission.SEND_SMS] == false) {
+            Toast.makeText(
+                context,
+                "SMS permission is off. SOS will continue, but contacts will not receive a text.",
+                Toast.LENGTH_LONG
+            ).show()
+        } else if (results.values.any { !it }) {
             Toast.makeText(context, "Some SOS actions may be unavailable because permissions were denied.", Toast.LENGTH_LONG).show()
         }
         onTriggerSos()
@@ -315,13 +323,28 @@ fun CitizenSosScreen(
                     colors = CardDefaults.cardColors(containerColor = if (result.isSuccess) Color(0xFF153326) else Color(0xFF3A2020)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, if (result.isSuccess) MeshConnectedGreen else EmergencyRed)
                 ) {
-                    Text(
-                        text = if (result.isSuccess) "SMS submitted to Android for ${result.sentCount} contact(s). Delivery is not confirmed."
-                        else result.error ?: "SMS could not be submitted.",
-                        modifier = Modifier.padding(12.dp),
-                        color = Color.White,
-                        fontSize = 13.sp
-                    )
+                    Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+                        Text(
+                            text = if (result.isSuccess) "SMS submitted to Android for ${result.sentCount} contact(s). Delivery is not confirmed."
+                            else result.error ?: "SMS could not be submitted.",
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
+                        if (!result.isSuccess && result.error.orEmpty().contains("SMS permission", ignoreCase = true)) {
+                            TextButton(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data = Uri.parse("package:${context.packageName}")
+                                        }
+                                    )
+                                },
+                                modifier = Modifier.testTag("open_sms_permission_settings_button")
+                            ) {
+                                Text("Open app permissions")
+                            }
+                        }
+                    }
                 }
             }
         }

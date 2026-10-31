@@ -2,6 +2,7 @@ package com.example.ui.components
 
 import android.Manifest
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -41,9 +42,16 @@ fun FirstLaunchPermissionsDialog() {
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) {
+    ) { results ->
         preferences.edit().putBoolean(PERMISSION_SETUP_DONE, true).apply()
         isVisible = false
+        if (results[Manifest.permission.SEND_SMS] == false) {
+            Toast.makeText(
+                context,
+                "SMS access is off. Guardian can still save an SOS locally, but cannot text your contacts until you allow SMS in app settings.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     if (!isVisible) return
