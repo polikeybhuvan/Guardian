@@ -11,6 +11,8 @@
 
 Verify the SHA-256 in the installation guide before installing. Turn Play Protect scanning back on immediately if you temporarily paused it.
 
+For an ADB-installed test build, the [installation guide](docs/INSTALL_AND_TEST.md#allow-direct-sms-for-an-adb-test-install) includes the SMS permission grant command. If Android does not allow direct SMS for a sideloaded APK, Guardian provides an **Open Messages** fallback with the SOS prefilled; the user taps **Send**.
+
 ## The problem
 
 During a disaster or personal emergency, people may have limited internet, need to share their location quickly, and be unsure what to do next. Emergency contacts, offline maps, first-aid guidance, and signaling tools are often spread across separate apps.
@@ -39,7 +41,7 @@ The GitHub pre-release is a **debug-signed test build** for Android phones. It b
 
 - [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.3-test/Guardian-Android-Test-1.0.3.apk)
 - [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.3-test)
-- SHA-256: `E0A47342B472B334D3348408BB4730657CE058A4A41E5FD26101F7239B71453A`
+- SHA-256: `01A9E47102D67321793A081EFD2716578BB408568E4A78E519CEFBCF36E4DA98`
 
 ## Build from source
 

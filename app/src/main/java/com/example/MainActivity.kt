@@ -296,6 +296,7 @@ fun SosMeshAppRoot(
                             sirenError = sirenError,
                             isTorchActive = isTorchActive,
                             savedContactsCount = emergencyContacts.size,
+                            emergencyContactPhoneNumbers = emergencyContacts.map { it.phoneNumber },
                             lastSmsResult = lastSmsResult,
                             nearestHospital = nearestHospital,
                             nearestPolice = nearestPolice,

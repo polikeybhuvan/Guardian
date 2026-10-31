@@ -128,6 +128,7 @@ fun CitizenSosScreen(
     sirenError: String? = null,
     isTorchActive: Boolean = false,
     savedContactsCount: Int = 0,
+    emergencyContactPhoneNumbers: List<String> = emptyList(),
     lastSmsResult: SmsDispatchResult? = null,
     nearestHospital: EmergencyCenter? = null,
     nearestPolice: EmergencyCenter? = null,
@@ -331,17 +332,49 @@ fun CitizenSosScreen(
                             fontSize = 13.sp
                         )
                         if (!result.isSuccess && result.error.orEmpty().contains("SMS permission", ignoreCase = true)) {
-                            TextButton(
-                                onClick = {
-                                    context.startActivity(
-                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                            data = Uri.parse("package:${context.packageName}")
-                                        }
-                                    )
-                                },
-                                modifier = Modifier.testTag("open_sms_permission_settings_button")
+                            Text(
+                                text = "If Android won’t allow SMS access for this install, open Messages and tap Send.",
+                                color = Color(0xFFD4C8B4),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text("Open app permissions")
+                                TextButton(
+                                    onClick = {
+                                        context.startActivity(
+                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                data = Uri.parse("package:${context.packageName}")
+                                            }
+                                        )
+                                    },
+                                    modifier = Modifier.testTag("open_sms_permission_settings_button")
+                                ) {
+                                    Text("App permissions")
+                                }
+                                TextButton(
+                                    onClick = {
+                                        val numbers = emergencyContactPhoneNumbers
+                                            .map { it.trim() }
+                                            .map { it.replace("[^0-9+]".toRegex(), "") }
+                                            .filter { it.isNotEmpty() }
+                                            .joinToString(";")
+                                        val smsIntent = Intent(
+                                            Intent.ACTION_SENDTO,
+                                            Uri.parse(if (numbers.isEmpty()) "smsto:" else "smsto:$numbers")
+                                        ).putExtra("sms_body", result.messageText)
+                                        runCatching {
+                                            context.startActivity(Intent.createChooser(smsIntent, "Send Guardian SOS"))
+                                        }.onFailure {
+                                            Toast.makeText(context, "No messaging app is available to send this SOS.", Toast.LENGTH_LONG).show()
+                                        }
+                                    },
+                                    modifier = Modifier.testTag("open_sms_composer_button")
+                                ) {
+                                    Text("Open Messages")
+                                }
                             }
                         }
                     }

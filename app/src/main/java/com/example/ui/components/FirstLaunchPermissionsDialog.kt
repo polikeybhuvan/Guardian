@@ -48,7 +48,7 @@ fun FirstLaunchPermissionsDialog() {
         if (results[Manifest.permission.SEND_SMS] == false) {
             Toast.makeText(
                 context,
-                "SMS access is off. Guardian can still save an SOS locally, but cannot text your contacts until you allow SMS in app settings.",
+                "SMS access is off. Guardian can save an SOS locally; if Android blocks SMS access for this install, use Open Messages after the SOS countdown.",
                 Toast.LENGTH_LONG
             ).show()
         }

@@ -16,11 +16,27 @@ Use this only for the Guardian APK downloaded from the release link above, after
 
 1. On the phone, open the **Google Play Store** and tap the profile icon.
 2. Open **Play Protect**, then tap the settings gear.
-3. Temporarily turn off **Scan apps with Play Protect** and confirm the prompt. Menu names can vary slightly by Android/Play Store version.
+3. Temporarily turn off **Scan apps with Play Protect** and confirm the prompt. Menu names can vary slightly by Android/Play Store version. This only pauses the app scan so the APK can be installed; it does not grant Guardian SMS access.
 4. Open the verified Guardian APK from Downloads and install it.
 5. Return to **Play Protect settings** and turn **Scan apps with Play Protect** back on.
 
 See [Google Play Protect help](https://support.google.com/googleplay/answer/2812853?hl=en) if the menus differ. If you prefer not to change Play Protect settings, use the ADB route below.
+
+### Allow direct SMS for an ADB test install
+
+Android treats `SEND_SMS` as a restricted permission. Some direct APK installs leave its **Allow** control unavailable in Android Settings. If that happens, connect the phone to a computer with USB debugging enabled and run this after installation:
+
+```powershell
+.\adb.exe shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
+```
+
+On macOS or Linux, run this from the extracted `platform-tools` folder:
+
+```bash
+./adb shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
+```
+
+This grants Guardian SMS access on that phone. If you install without granting it, Guardian still saves the SOS locally and offers **Open Messages** with the SOS and saved contact numbers prefilled; the user must tap **Send** in the messaging app.
 
 ## Verify the APK
 
@@ -35,7 +51,7 @@ Get-FileHash .\Guardian-Android-Test-1.0.3.apk -Algorithm SHA256
 Expected hash:
 
 ```text
-E0A47342B472B334D3348408BB4730657CE058A4A41E5FD26101F7239B71453A
+01A9E47102D67321793A081EFD2716578BB408568E4A78E519CEFBCF36E4DA98
 ```
 
 ## Other installation routes
@@ -81,7 +97,7 @@ For unrestricted public distribution through Google Play, a Play Console develop
 
 1. Open Guardian and follow the permission setup prompts. Grant only the permissions needed for the features you plan to test.
 2. Add an emergency contact who has agreed to receive test messages.
-3. Allow Guardian to send SMS when Android asks. If SMS was denied, open **Settings → Apps → Guardian → Permissions → SMS** and allow it; on some phones the SMS setting may appear under a slightly different label.
+3. Allow Guardian to send SMS when Android asks. If Android leaves SMS unavailable for this direct install, either grant it with the ADB command above or use Guardian’s **Open Messages** fallback and tap **Send** in the messaging app.
 4. Confirm location is enabled and allow Guardian to use it for the SOS and map.
 5. Keep a working SIM and cellular service available when testing SMS. Wi-Fi alone does not send SMS.
 6. Allow the map/model setup to finish. The first map opening copies the bundled India map into app storage; AID prepares the bundled Gemma model for offline use.
@@ -108,7 +124,7 @@ Use a test contact who explicitly agreed beforehand. Put `DEMO` in the test inci
 | Play Protect blocks Chrome/Files installation | Verify the APK SHA-256. Use Option 2 to pause scanning just for this install and re-enable it immediately, or use the ADB route if you prefer to keep scanning enabled. |
 | Map does not appear | Confirm first-run map setup completed, location permission and GPS are enabled, and the phone has enough free storage. Mobile data is not required to render the bundled map. |
 | Location is missing or inaccurate | Enable device location, grant Guardian location permission, and wait for a GPS fix; test outdoors with a clear view of the sky. |
-| SMS is not submitted | Check the saved number, allow SMS under Android app permissions, and confirm a working SIM, cellular signal, and carrier support. An app submission status is not a carrier delivery receipt. |
+| SMS is not submitted | Check the saved number, SMS permission, SIM, cellular signal, and carrier support. For a direct APK install with SMS permission unavailable, use the ADB grant command above or tap **Open Messages** on the SOS result. An app submission status is not a carrier delivery receipt. |
 | AID is still preparing | Keep the app open and allow time for the 584 MB model to be copied and initialized. No Gemini API key is used. |
 | Relay finds no peer | Confirm Guardian is installed on the second phone, nearby permissions are granted, and Bluetooth/Wi-Fi radios are on. Test with both phones close together. |
 
