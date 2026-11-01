@@ -8,7 +8,7 @@ Both options install the same Guardian APK. Start with the normal Android instal
 
 ### Option 1: Normal direct install
 
-Download the [Guardian 1.0.4 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.4-test/Guardian-Android-Test-1.0.4.apk) from GitHub, verify its SHA-256, open it from Downloads, and follow Android’s installer prompts. If asked, allow the browser or file manager to install unknown apps.
+Download the [Guardian 1.0.5 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.5-test/Guardian-Android-Test-1.0.5.apk) from GitHub, verify its SHA-256, open it from Downloads, and follow Android’s installer prompts. If asked, allow the browser or file manager to install unknown apps.
 
 ### Option 2: Direct install if Play Protect blocks the APK
 
@@ -24,7 +24,7 @@ See [Google Play Protect help](https://support.google.com/googleplay/answer/2812
 
 ### Allow direct SMS for an ADB test install
 
-Android treats `SEND_SMS` as a restricted permission. A browser or file-manager install may be denied direct SMS access; disabling Play Protect scanning does not grant this permission. Guardian will open Messages with the prepared alert, and the user must review and tap **Send**. For an authorized ADB test device, connect it with USB debugging enabled and run this after installation:
+Android treats `SEND_SMS` as a hard-restricted permission. A browser or file-manager install may be denied direct SMS access; disabling Play Protect scanning does not grant this permission. Guardian sends directly with Android `SmsManager` when the permission is granted. If Android blocks it, Guardian reports that SMS was not sent and keeps the SOS saved locally; it does not open another messaging app. For an authorized ADB test device, connect it with USB debugging enabled and run this after installation:
 
 ```powershell
 .\adb.exe shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
@@ -36,7 +36,7 @@ On macOS or Linux, run this from the extracted `platform-tools` folder:
 ./adb shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
 ```
 
-This grants Guardian SMS access on that phone if Android permits the ADB grant. If it remains unavailable, Guardian still saves the SOS locally and offers **Open Messages** with the SOS and saved contact numbers prefilled; the user must tap **Send** in the messaging app. Guardian does not ask sideloaded users repeatedly for a permission Android has blocked.
+This grants Guardian SMS access on that phone if Android permits the ADB grant. If it remains unavailable, Guardian still saves the SOS locally and reports that direct SMS is blocked. Android defines `SEND_SMS` as a hard-restricted permission that can be granted only when the installer allowlists it; see the [Android permission reference](https://developer.android.com/reference/android/Manifest.permission#SEND_SMS).
 
 ## Verify the APK
 
@@ -45,13 +45,13 @@ The APK is about **1.57 GiB**. Keep several GB of free space available because t
 Before installing, verify the downloaded file’s SHA-256 hash:
 
 ```powershell
-Get-FileHash .\Guardian-Android-Test-1.0.4.apk -Algorithm SHA256
+Get-FileHash .\Guardian-Android-Test-1.0.5.apk -Algorithm SHA256
 ```
 
 Expected hash:
 
 ```text
-838C868361BE6037C359D5C85346A4545CA77937AA27346A2ACC2446D4C4A38D
+1A929685EA02BF424D4B7507F6C332BC935C8E51E06154C4BB1A006ACF686581
 ```
 
 ## Other installation routes
@@ -71,17 +71,17 @@ ADB is Android’s standard developer workflow for installing and testing an APK
 4. Install the APK. Replace the example path with the APK’s actual location:
 
    ```powershell
-   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.4.apk"
+   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.5.apk"
    ```
 
 For macOS or Linux, use `./adb` instead of `.\adb.exe`:
 
 ```bash
 ./adb devices
-./adb install -r ~/Downloads/Guardian-Android-Test-1.0.4.apk
+./adb install -r ~/Downloads/Guardian-Android-Test-1.0.5.apk
 ```
 
-If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.4.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
+If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.5.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
 
 ADB is a developer installation route, not a Play Store review or malware certification. Play Protect can still scan apps after installation.
 
@@ -97,7 +97,7 @@ For unrestricted public distribution through Google Play, a Play Console develop
 
 1. Open Guardian and follow the permission setup prompts. Grant only the permissions needed for the features you plan to test.
 2. Add an emergency contact who has agreed to receive test messages.
-3. Allow Guardian to send SMS when Android asks. If Android leaves SMS unavailable for this direct install, either grant it with the ADB command above or use Guardian’s **Open Messages** fallback and tap **Send** in the messaging app.
+3. Allow Guardian to send SMS when Android asks. If Android leaves SMS unavailable for this direct install, grant it with the ADB command above on your authorized test device. Guardian reports blocked direct SMS without launching a messaging app.
 4. Confirm location is enabled and allow Guardian to use it for the SOS and map.
 5. Keep a working SIM and cellular service available when testing SMS. Wi-Fi alone does not send SMS.
 6. Allow the map/model setup to finish. The first map opening copies the bundled India map into app storage; AID prepares the bundled Gemma model for offline use.
@@ -124,7 +124,7 @@ Use a test contact who explicitly agreed beforehand. Put `DEMO` in the test inci
 | Play Protect blocks Chrome/Files installation | Verify the APK SHA-256. Use Option 2 to pause scanning just for this install and re-enable it immediately, or use the ADB route if you prefer to keep scanning enabled. |
 | Map does not appear | Confirm first-run map setup completed, location permission and GPS are enabled, and the phone has enough free storage. Mobile data is not required to render the bundled map. |
 | Location is missing or inaccurate | Enable device location, grant Guardian location permission, and wait for a GPS fix; test outdoors with a clear view of the sky. |
-| SMS is not submitted | Check the saved number, SMS permission, SIM, cellular signal, and carrier support. For a direct APK install with SMS permission unavailable, use the ADB grant command above or tap **Open Messages** on the SOS result. An app submission status is not a carrier delivery receipt. |
+| SMS is not submitted | Check the saved number, SMS permission, SIM, cellular signal, and carrier support. For an APK install with SMS permission unavailable, use the ADB grant command above on your authorized test device. An app submission status is not a carrier delivery receipt. |
 | AID is still preparing | Keep the app open and allow time for the 584 MB model to be copied and initialized. No Gemini API key is used. |
 | Relay finds no peer | Confirm Guardian is installed on the second phone, nearby permissions are granted, and Bluetooth/Wi-Fi radios are on. Test with both phones close together. |
 

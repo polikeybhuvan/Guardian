@@ -1,9 +1,7 @@
 package com.example.ui.screens
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
-import android.content.pm.PackageManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -469,25 +467,11 @@ fun EmergencyContactsScreen(
         AlertDialog(
             onDismissRequest = { showTestSmsConfirmation = false },
             title = { Text("Send a setup test?") },
-            text = { Text("A non-emergency test message will be sent to your saved contacts. If Android blocks direct SMS, Messages will open so you can review and tap Send. Your carrier may charge for SMS.") },
+            text = { Text("A non-emergency test SMS will be sent directly to your saved contacts. Android must grant Guardian the restricted SMS permission first. Your carrier may charge for SMS.") },
             confirmButton = {
                 Button(onClick = {
                     showTestSmsConfirmation = false
-                    if (context.checkSelfPermission(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
-                        onSendTestSms()
-                    } else {
-                        val numbers = contacts.map { it.phoneNumber.trim() }.filter { it.isNotEmpty() }.joinToString(";")
-                        val testMessage = "GUARDIAN TEST: This is a test message to confirm your emergency contact setup. No help is needed."
-                        val testIntent = Intent(
-                            Intent.ACTION_SENDTO,
-                            Uri.parse(if (numbers.isEmpty()) "smsto:" else "smsto:$numbers")
-                        ).putExtra("sms_body", testMessage)
-                        runCatching {
-                            context.startActivity(Intent.createChooser(testIntent, "Review test message"))
-                        }.onFailure {
-                            android.widget.Toast.makeText(context, "No messaging app is available for the test message.", android.widget.Toast.LENGTH_LONG).show()
-                        }
-                    }
+                    onSendTestSms()
                 }) { Text("Send test") }
             },
             dismissButton = {

@@ -6,12 +6,12 @@
 
 ## Quick install
 
-1. Download the [Guardian 1.0.4 APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.4-test/Guardian-Android-Test-1.0.4.apk).
+1. Download the [Guardian 1.0.5 APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.5-test/Guardian-Android-Test-1.0.5.apk).
 2. Choose [normal direct install](docs/INSTALL_AND_TEST.md#option-1-normal-direct-install) or [direct install after a temporary Play Protect scan pause](docs/INSTALL_AND_TEST.md#option-2-direct-install-if-play-protect-blocks-the-apk).
 
 Verify the SHA-256 in the installation guide before installing. Turn Play Protect scanning back on immediately if you temporarily paused it.
 
-Android may restrict direct SMS permission for APKs installed from a browser or file manager. Guardian avoids repeatedly requesting that restricted permission and opens Messages with the SOS prefilled when direct sending is unavailable; the user reviews and taps **Send**. The [installation guide](docs/INSTALL_AND_TEST.md#allow-direct-sms-for-an-adb-test-install) includes the optional ADB grant for authorized test devices.
+Guardian sends SOS texts directly through Android when `SEND_SMS` permission is granted. Android treats this as a hard-restricted permission, so some browser or file-manager installs cannot grant it. In that case Guardian explains the permission issue and keeps the SOS saved locally; it does not switch to a messaging app. The [installation guide](docs/INSTALL_AND_TEST.md#allow-direct-sms-for-an-adb-test-install) includes the ADB grant for authorized test devices.
 
 ## The problem
 
@@ -39,9 +39,9 @@ If someone is stranded during flooding with mobile data unavailable, they can ch
 
 The GitHub pre-release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model and is about **1.57 GiB**; allow extra space while the app prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it.
 
-- [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.4-test/Guardian-Android-Test-1.0.4.apk)
-- [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.4-test)
-- SHA-256: `838C868361BE6037C359D5C85346A4545CA77937AA27346A2ACC2446D4C4A38D`
+- [Download the current Guardian test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.5-test/Guardian-Android-Test-1.0.5.apk)
+- [View release notes](https://github.com/polikeybhuvan/Guardian/releases/tag/v1.0.5-test)
+- SHA-256: `1A929685EA02BF424D4B7507F6C332BC935C8E51E06154C4BB1A006ACF686581`
 
 ## Build from source
 

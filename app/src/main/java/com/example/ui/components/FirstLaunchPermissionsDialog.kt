@@ -62,7 +62,7 @@ fun FirstLaunchPermissionsDialog() {
                         "microphone for voice notes, and notifications for alerts."
                 )
                 Text(
-                    "Android may show system permission screens. SMS access also depends on how Guardian was installed; if direct SMS is unavailable, Guardian prepares the alert in Messages for you to review and send.",
+                    "Android may show system permission screens. Direct emergency SMS also requires Android to grant Guardian the restricted SMS permission; some sideload installs block it.",
                     modifier = Modifier.padding(top = 10.dp)
                 )
             }
@@ -95,6 +95,7 @@ private fun guardianRuntimePermissions(): List<String> = buildList {
     add(Manifest.permission.ACCESS_COARSE_LOCATION)
     add(Manifest.permission.CAMERA)
     add(Manifest.permission.RECORD_AUDIO)
+    add(Manifest.permission.SEND_SMS)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         add(Manifest.permission.BLUETOOTH_SCAN)

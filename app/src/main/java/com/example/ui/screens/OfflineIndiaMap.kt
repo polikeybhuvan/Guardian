@@ -1,7 +1,6 @@
 package com.example.ui.screens
 
 import android.content.Context
-import android.view.View
 import android.graphics.Bitmap as AndroidBitmap
 import android.graphics.Canvas as AndroidCanvas
 import android.graphics.Paint as AndroidPaint
@@ -97,7 +96,6 @@ internal fun OfflineIndiaMapSurface(
     var awaitingFreshLocation by remember(mapFile) { androidx.compose.runtime.mutableStateOf(false) }
     val mapView = remember(context, mapFile) {
         MapView(context).apply {
-            setLayerType(View.LAYER_TYPE_HARDWARE, null)
             val centerLat = latitude ?: 22.0
             val centerLon = longitude ?: 79.0
             setCenter(LatLong(centerLat, centerLon))

@@ -127,7 +127,6 @@ fun CitizenSosScreen(
     sirenError: String? = null,
     isTorchActive: Boolean = false,
     savedContactsCount: Int = 0,
-    emergencyContactPhoneNumbers: List<String> = emptyList(),
     lastSmsResult: SmsDispatchResult? = null,
     nearestHospital: EmergencyCenter? = null,
     nearestPolice: EmergencyCenter? = null,
@@ -321,9 +320,9 @@ fun CitizenSosScreen(
                             color = Color.White,
                             fontSize = 13.sp
                         )
-                        if (!result.isSuccess && result.error.orEmpty().contains("SMS permission", ignoreCase = true)) {
+                        if (!result.isSuccess && result.error.orEmpty().contains("SEND_SMS", ignoreCase = true)) {
                             Text(
-                                text = "If Android won’t allow SMS access for this install, open Messages and tap Send.",
+                                text = "Guardian sends SOS texts directly. Android may block this restricted permission for sideloaded apps. Open app settings and enable SMS access; if Android keeps it restricted, install through an installer that allows SEND_SMS or use the ADB grant steps in the project guide.",
                                 color = Color(0xFFD4C8B4),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(top = 6.dp)
@@ -334,24 +333,16 @@ fun CitizenSosScreen(
                             ) {
                                 TextButton(
                                     onClick = {
-                                        val numbers = emergencyContactPhoneNumbers
-                                            .map { it.trim() }
-                                            .map { it.replace("[^0-9+]".toRegex(), "") }
-                                            .filter { it.isNotEmpty() }
-                                            .joinToString(";")
-                                        val smsIntent = Intent(
-                                            Intent.ACTION_SENDTO,
-                                            Uri.parse(if (numbers.isEmpty()) "smsto:" else "smsto:$numbers")
-                                        ).putExtra("sms_body", result.messageText)
-                                        runCatching {
-                                            context.startActivity(Intent.createChooser(smsIntent, "Send Guardian SOS"))
-                                        }.onFailure {
-                                            Toast.makeText(context, "No messaging app is available to send this SOS.", Toast.LENGTH_LONG).show()
-                                        }
+                                        val settingsIntent = Intent(
+                                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                            Uri.parse("package:${context.packageName}")
+                                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        runCatching { context.startActivity(settingsIntent) }
+                                            .onFailure { Toast.makeText(context, "Open Guardian in Android Settings to manage SMS access.", Toast.LENGTH_LONG).show() }
                                     },
-                                    modifier = Modifier.testTag("open_sms_composer_button")
+                                    modifier = Modifier.testTag("open_sms_settings_button")
                                 ) {
-                                    Text("Open Messages")
+                                    Text("Open app settings")
                                 }
                             }
                         }

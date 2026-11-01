@@ -1,9 +1,7 @@
 package com.example.data.location
 
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.telephony.SmsManager
 import androidx.core.content.ContextCompat
@@ -73,7 +71,7 @@ class SmsDispatcher(private val context: Context) {
                 sentCount = 0,
                 failedCount = contacts.size,
                 messageText = messageText,
-                error = "SMS permission is unavailable for this install. Open Messages to review and send the SOS."
+                error = "Direct SMS is blocked because Android has not granted Guardian the restricted SEND_SMS permission. Enable it in Android settings, then retry."
             )
         }
 
@@ -142,18 +140,6 @@ class SmsDispatcher(private val context: Context) {
             messageText = messageText,
             error = if (failedCount > 0) firstError ?: "Android could not submit the SMS to every contact." else null
         )
-    }
-
-    /**
-     * Fallback intent to open standard messaging app prefilled with all numbers and distress text.
-     */
-    fun createMessagingIntent(contacts: List<EmergencyContactEntity>, messageText: String): Intent {
-        val phoneNumbers = contacts.map { it.phoneNumber.trim() }.filter { it.isNotEmpty() }.joinToString(";")
-        val uri = if (phoneNumbers.isNotEmpty()) Uri.parse("smsto:$phoneNumbers") else Uri.parse("smsto:")
-        return Intent(Intent.ACTION_SENDTO, uri).apply {
-            putExtra("sms_body", messageText)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
     }
 
     @Suppress("DEPRECATION")
