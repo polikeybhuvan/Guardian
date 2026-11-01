@@ -3,7 +3,6 @@ package com.example.ui.screens
 import android.Manifest
 import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import android.widget.Toast
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -189,14 +188,8 @@ fun CitizenSosScreen(
     val sosPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
-        // SOS remains available even if the user denies one or more permissions.
-        if (results[Manifest.permission.SEND_SMS] == false) {
-            Toast.makeText(
-                context,
-                "SMS permission is off. SOS will continue, but contacts will not receive a text.",
-                Toast.LENGTH_LONG
-            ).show()
-        } else if (results.values.any { !it }) {
+        // SOS remains available if location or other optional permissions are denied.
+        if (results.values.any { !it }) {
             Toast.makeText(context, "Some SOS actions may be unavailable because permissions were denied.", Toast.LENGTH_LONG).show()
         }
         onTriggerSos()
@@ -269,9 +262,6 @@ fun CitizenSosScreen(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
         )
-        if (savedContactsCount > 0) {
-            requiredForAutomaticActions += Manifest.permission.SEND_SMS
-        }
         val missingPermissions = requiredForAutomaticActions.filter { permission ->
             androidx.core.content.ContextCompat.checkSelfPermission(context, permission) != android.content.pm.PackageManager.PERMISSION_GRANTED
         }
@@ -342,18 +332,6 @@ fun CitizenSosScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                TextButton(
-                                    onClick = {
-                                        context.startActivity(
-                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                                data = Uri.parse("package:${context.packageName}")
-                                            }
-                                        )
-                                    },
-                                    modifier = Modifier.testTag("open_sms_permission_settings_button")
-                                ) {
-                                    Text("App permissions")
-                                }
                                 TextButton(
                                     onClick = {
                                         val numbers = emergencyContactPhoneNumbers

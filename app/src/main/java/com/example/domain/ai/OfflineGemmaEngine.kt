@@ -440,8 +440,8 @@ class OfflineGemmaEngine {
                     stepNumber = 1,
                     title = "Cool Burn Immediately with Clean Water",
                     titleHindi = "तुरंत साफ पानी से ठंडा करें",
-                    instruction = "Pour cool room-temperature running water over the burn for 10-20 minutes. Stop immediately if victim starts shivering.",
-                    instructionHindi = "जले हुए स्थान पर तुरंत 10-20 मिनट तक नल का सामान्य साफ पानी डालें। यदि ठंड लगने लगे तो तुरंत रोकें।",
+                    instruction = "Cool the burn under clean, cool running water for 20 minutes. Do not use ice or iced water; keep the rest of the person warm and watch for shivering.",
+                    instructionHindi = "जले हुए हिस्से को साफ, ठंडे बहते पानी के नीचे 20 मिनट तक ठंडा करें। बर्फ या बर्फ का पानी न लगाएं; शरीर के बाकी हिस्से को गर्म रखें और कंपकंपी पर ध्यान दें।",
                     isCritical = true
                 ),
                 TriageStep(

@@ -38,7 +38,7 @@ class GemmaTriageService(private val offlineChatModel: OfflineGemmaChatModel? = 
         // Keep the vetted, specific local protocols as fast answers. Gemma handles other
         // emergency questions when its model is installed; without it, rules remain available.
         val localProtocol = trimmed.lowercase(java.util.Locale.ROOT).let {
-            listOf("tourniquet", "cpr", "cardiac arrest", "recovery position", "unconscious breathing", "choking", "heimlich")
+            listOf("tourniquet", "cpr", "cardiac arrest", "recovery position", "unconscious breathing", "choking", "heimlich", "burn", "scald", "jala")
                 .any(it::contains)
         }
         val model = offlineChatModel
@@ -101,6 +101,21 @@ class GemmaTriageService(private val offlineChatModel: OfflineGemmaChatModel? = 
         val lower = trimmed.lowercase(java.util.Locale.ROOT)
 
         // 1. Check for targeted medical/first-aid protocol questions
+        if (listOf("burn", "scald", "jala").any(lower::contains)) {
+            val isChemicalOrElectrical = listOf("chemical", "electric", "electrical", "acid")
+                .any(lower::contains)
+            val text = if (isChemicalOrElectrical) {
+                "Get away from the source safely and keep others away. Do not touch someone still in contact with live electricity. Call 112 and seek urgent medical help for a chemical or electrical burn; do not delay help to continue this chat."
+            } else {
+                "For a heat burn or scald: move away from the heat, then cool the area under cool running tap water for 20 minutes. Do not use ice or iced water. Remove nearby jewellery and loose clothing unless it is stuck to the skin; keep the rest of the person warm. After cooling, cover loosely with a clean, non-fluffy dressing. Do not apply creams, oils, toothpaste, or butter, and do not burst blisters. Call 112 or seek urgent care for a large or deep burn, a burn to the face, hands, feet, joints, or genitals, breathing problems, or signs of shock. Seek medical advice if unsure or if it worsens."
+            }
+            return com.example.data.model.TriageChatMessage(
+                isUser = false,
+                text = text,
+                quickFollowUps = listOf("When is a burn urgent?", "Apply to SOS Alert")
+            )
+        }
+
         if (lower.contains("tourniquet") || lower.contains("tourniquet kaise") || lower.contains("make tourniquet")) {
             val text = """
                 🩸 **IMPROVISED TOURNIQUET PROTOCOL (CRITICAL LIFE SUPPORT)**

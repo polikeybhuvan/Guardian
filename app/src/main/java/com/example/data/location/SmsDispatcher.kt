@@ -73,7 +73,7 @@ class SmsDispatcher(private val context: Context) {
                 sentCount = 0,
                 failedCount = contacts.size,
                 messageText = messageText,
-                error = "SMS permission not granted. Please allow SEND_SMS in permission settings."
+                error = "SMS permission is unavailable for this install. Open Messages to review and send the SOS."
             )
         }
 

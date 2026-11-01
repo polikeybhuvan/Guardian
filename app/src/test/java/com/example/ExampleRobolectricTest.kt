@@ -363,6 +363,18 @@ class ExampleRobolectricTest {
     }
 
     @Test
+    fun `AID gives safe minor burn guidance without escalating every minor burn to 112`() {
+        val response = GemmaTriageService().processChatInput("What should I do for a minor burn?")
+        val guidance = response.text.lowercase()
+
+        assertTrue(guidance.contains("cool running tap water for 20 minutes"))
+        assertTrue(guidance.contains("do not use ice or iced water"))
+        assertTrue(guidance.contains("call 112") && guidance.contains("large or deep burn"))
+        assertFalse(guidance.contains("ice-cold water"))
+        assertFalse(guidance.contains("immediately call india's emergency number 112"))
+    }
+
+    @Test
     fun `AID chat refuses unrelated questions with emergency-only message`() {
         val service = GemmaTriageService()
         val response = service.processChatInput("What is the capital of France?")

@@ -8,7 +8,7 @@ Both options install the same Guardian APK. Start with the normal Android instal
 
 ### Option 1: Normal direct install
 
-Download the [Guardian 1.0.3 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.3-test/Guardian-Android-Test-1.0.3.apk) from GitHub, verify its SHA-256, open it from Downloads, and follow Android’s installer prompts. If asked, allow the browser or file manager to install unknown apps.
+Download the [Guardian 1.0.4 test APK](https://github.com/polikeybhuvan/Guardian/releases/download/v1.0.4-test/Guardian-Android-Test-1.0.4.apk) from GitHub, verify its SHA-256, open it from Downloads, and follow Android’s installer prompts. If asked, allow the browser or file manager to install unknown apps.
 
 ### Option 2: Direct install if Play Protect blocks the APK
 
@@ -24,7 +24,7 @@ See [Google Play Protect help](https://support.google.com/googleplay/answer/2812
 
 ### Allow direct SMS for an ADB test install
 
-Android treats `SEND_SMS` as a restricted permission. Some direct APK installs leave its **Allow** control unavailable in Android Settings. If that happens, connect the phone to a computer with USB debugging enabled and run this after installation:
+Android treats `SEND_SMS` as a restricted permission. A browser or file-manager install may be denied direct SMS access; disabling Play Protect scanning does not grant this permission. Guardian will open Messages with the prepared alert, and the user must review and tap **Send**. For an authorized ADB test device, connect it with USB debugging enabled and run this after installation:
 
 ```powershell
 .\adb.exe shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
@@ -36,7 +36,7 @@ On macOS or Linux, run this from the extracted `platform-tools` folder:
 ./adb shell pm grant com.aistudio.sosmesh.kxmbpv android.permission.SEND_SMS
 ```
 
-This grants Guardian SMS access on that phone. If you install without granting it, Guardian still saves the SOS locally and offers **Open Messages** with the SOS and saved contact numbers prefilled; the user must tap **Send** in the messaging app.
+This grants Guardian SMS access on that phone if Android permits the ADB grant. If it remains unavailable, Guardian still saves the SOS locally and offers **Open Messages** with the SOS and saved contact numbers prefilled; the user must tap **Send** in the messaging app. Guardian does not ask sideloaded users repeatedly for a permission Android has blocked.
 
 ## Verify the APK
 
@@ -45,13 +45,13 @@ The APK is about **1.57 GiB**. Keep several GB of free space available because t
 Before installing, verify the downloaded file’s SHA-256 hash:
 
 ```powershell
-Get-FileHash .\Guardian-Android-Test-1.0.3.apk -Algorithm SHA256
+Get-FileHash .\Guardian-Android-Test-1.0.4.apk -Algorithm SHA256
 ```
 
 Expected hash:
 
 ```text
-01A9E47102D67321793A081EFD2716578BB408568E4A78E519CEFBCF36E4DA98
+838C868361BE6037C359D5C85346A4545CA77937AA27346A2ACC2446D4C4A38D
 ```
 
 ## Other installation routes
@@ -71,17 +71,17 @@ ADB is Android’s standard developer workflow for installing and testing an APK
 4. Install the APK. Replace the example path with the APK’s actual location:
 
    ```powershell
-   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.3.apk"
+   .\adb.exe install -r "C:\Users\YourName\Downloads\Guardian-Android-Test-1.0.4.apk"
    ```
 
 For macOS or Linux, use `./adb` instead of `.\adb.exe`:
 
 ```bash
 ./adb devices
-./adb install -r ~/Downloads/Guardian-Android-Test-1.0.3.apk
+./adb install -r ~/Downloads/Guardian-Android-Test-1.0.4.apk
 ```
 
-If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.3.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
+If more than one device is connected, select the right serial with `adb -s SERIAL install -r /path/to/Guardian-Android-Test-1.0.4.apk`. `-r` updates an existing install only when Android accepts its signing key; if Android reports a signature conflict, uninstall the old copy and install again. Uninstalling removes that phone’s local Guardian data.
 
 ADB is a developer installation route, not a Play Store review or malware certification. Play Protect can still scan apps after installation.
 

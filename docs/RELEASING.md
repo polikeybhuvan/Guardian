@@ -1,6 +1,6 @@
 # Releasing a Guardian test build
 
-This checklist covers a direct APK release through GitHub. The current GitHub release, tagged `v1.0.3-test`, contains a debug-signed test APK for demonstrations and device testing.
+This checklist covers a direct APK release through GitHub. The current GitHub release, tagged `v1.0.4-test`, contains a debug-signed test APK for demonstrations and device testing.
 
 ## 1. Prepare the version
 
@@ -58,7 +58,7 @@ The APK is written to `app/build/outputs/apk/release/app-release.apk`. Before sh
 ## 4. Publish a GitHub Release
 
 1. Push the reviewed source commit to `main`.
-2. In GitHub, open **Releases → Draft a new release** and create a tag such as `v1.0.3-test` for the tested version.
+2. In GitHub, open **Releases → Draft a new release** and create a tag such as `v1.0.4-test` for the tested version.
 3. Attach the verified APK as a release asset. GitHub Releases hosts the download; do not commit the APK or signing key to the source tree.
 4. Add concise notes: app version, what changed, APK size, SHA-256, and the installation guide link.
 5. Mark it as a prerelease/test build until it is intended for general users.

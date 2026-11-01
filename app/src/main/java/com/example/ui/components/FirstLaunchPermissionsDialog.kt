@@ -2,7 +2,6 @@ package com.example.ui.components
 
 import android.Manifest
 import android.os.Build
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -42,16 +41,9 @@ fun FirstLaunchPermissionsDialog() {
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { results ->
+    ) { _ ->
         preferences.edit().putBoolean(PERMISSION_SETUP_DONE, true).apply()
         isVisible = false
-        if (results[Manifest.permission.SEND_SMS] == false) {
-            Toast.makeText(
-                context,
-                "SMS access is off. Guardian can save an SOS locally; if Android blocks SMS access for this install, use Open Messages after the SOS countdown.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
     }
 
     if (!isVisible) return
@@ -66,11 +58,11 @@ fun FirstLaunchPermissionsDialog() {
             Column {
                 Text(
                     "Choose which emergency features Guardian can use: location for SOS and maps, " +
-                        "SMS to alert your contacts, nearby access for relay, camera for Torch SOS, " +
+                        "nearby access for relay, camera for Torch SOS, " +
                         "microphone for voice notes, and notifications for alerts."
                 )
                 Text(
-                    "Android may show a few system permission screens. You can change access later in Settings.",
+                    "Android may show system permission screens. SMS access also depends on how Guardian was installed; if direct SMS is unavailable, Guardian prepares the alert in Messages for you to review and send.",
                     modifier = Modifier.padding(top = 10.dp)
                 )
             }
@@ -101,7 +93,6 @@ fun FirstLaunchPermissionsDialog() {
 private fun guardianRuntimePermissions(): List<String> = buildList {
     add(Manifest.permission.ACCESS_FINE_LOCATION)
     add(Manifest.permission.ACCESS_COARSE_LOCATION)
-    add(Manifest.permission.SEND_SMS)
     add(Manifest.permission.CAMERA)
     add(Manifest.permission.RECORD_AUDIO)
 
