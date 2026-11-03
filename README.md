@@ -35,6 +35,16 @@ Guardian complements official emergency response. It sends SOS messages to saved
 
 If someone is stranded during flooding with mobile data unavailable, they can check their position on the offline map, send an SOS and location by SMS to saved contacts when cellular SMS is available, consult offline guidance, and use a torch or Morse signal to attract attention.
 
+## Future scope
+
+Potential next steps for Guardian include:
+
+- **Safe demo and practice mode:** Simulate the SOS flow on the device so demonstrations and drills never send real messages.
+- **Community pilot:** Work with local communities and safety organizations to observe real-world practice drills and prioritize improvements from user feedback.
+- **Flexible offline downloads:** Offer Wi-Fi downloads of selected map regions and the on-device AI model, so users can choose the resources they need.
+- **Reviewed emergency information:** Label trusted sources and review dates, and invite local emergency and first-aid professionals to review guidance.
+- **More Indian languages:** Add languages in stages, with fluent speakers reviewing the interface and emergency guidance for clarity and safety.
+
 ## Download the test build
 
 The GitHub pre-release is a **debug-signed test build** for Android phones. It bundles the India map and Gemma model and is about **1.57 GiB**; allow extra space while the app prepares the offline assets. Read [Installation and testing](docs/INSTALL_AND_TEST.md) before sharing it.
